@@ -9,7 +9,6 @@ obtain the X set in the function [X, Y] = getClassificationData (DATA)
 
 ## Information fields
 
-
 X(:,1) - quarter
   (1 = Jan-Mar;
    2 = Apr=Jun)
@@ -32,10 +31,11 @@ X(:,2)  - month
 
 X(:,3) - price_difference - difference in price of the stock in the current week
 
-    Result of open (Price of the stock at the beginning of the week) -
-    close (close: the price of the stock at the end of the week)
+    Result of close (close: the price of the stock at the end of the
+    week) - open (Price of the stock at the beginning of the week)
 
-    Corresponds to data(:,4) - data(:,7)
+
+    Corresponds to data(:,7) - data(:,4)
 
 X(:,4) - price_range - difference between the highest and the lowest price of
           the stock during the week
@@ -48,9 +48,9 @@ X(:,4) - price_range - difference between the highest and the lowest price of
 X(:,5) - next_week_price_difference: difference in price of the stock in the
           following week
 
-    Result of the next_weeks_open - next_weeks_close
+    Result of next_weeks_close - next_weeks_open
 
-    Corresponds to data(:,12) - data(:,13)
+    Corresponds to data(:,13) - data(:,12)
 
 X(:,6) - percent_change_price: the percentage change in price throughout the week
 
@@ -97,6 +97,7 @@ Y(:,1) - profitable
    change in price of the stock in the following week)
    If the percentage is negative, the investment will not be profitable. Else,
    the investment will produce profit.
+   Zero values are considered non-profitable.
 
    Corresponds to data(:,14)
 
