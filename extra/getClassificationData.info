@@ -1,0 +1,113 @@
+1. Introduction
+
+The following points introduces the transformation that suffer the original DATA set to
+obtain the X set in the function [X, Y] = getClassificationData (DATA)
+
+
+2. Description of the X set
+=====
+
+## Information fields
+
+
+X(:,1) - quarter
+  (1 = Jan-Mar;
+   2 = Apr=Jun)
+
+   Corresponds to data(:,1)
+
+X(:,2)  - month
+  (1 = First month of the quarter;
+   2 = Second month of the quarter;
+   3 = Third month of the quarter;
+   )
+
+   I have extracted this field from the "date" field. I have considered that
+   selecting the months instead of specific dates is more meaningful and easy-
+   to-train data.
+
+   Corresponds to data(:,3)
+
+## Price fields
+
+X(:,3) - price_difference - difference in price of the stock in the current week
+
+    Result of open (Price of the stock at the beginning of the week) -
+    close (close: the price of the stock at the end of the week)
+
+    Corresponds to data(:,4) - data(:,7)
+
+X(:,4) - price_range - difference between the highest and the lowest price of
+          the stock during the week
+
+    Result of high (the highest price of the stock during the week) -
+    low (the lowest price of the stock during the week)
+
+    Corresponds to data(:,5) - data(:,6)
+
+X(:,5) - next_week_price_difference: difference in price of the stock in the
+          following week
+
+    Result of the next_weeks_open - next_weeks_close
+
+    Corresponds to data(:,12) - data(:,13)
+
+X(:,6) - percent_change_price: the percentage change in price throughout the week
+
+    Corresponds to data(:,9)
+
+## Volume fields
+
+X(:,7) - volume: the number of shares of stock that traded hands in the week
+
+    Corresponds to data(:,8)
+
+X(:,8) - previous_week_volume: the number of shares of stock that traded hands
+          in the previous week
+
+    Corresponds to data(:,11)
+
+X(:,9) - percent_change_volume_over_last_week: the percentage change in the number
+          of shares of stock that traded hands for this week compared to the
+          previous week
+
+    Corresponds to data(:,10)
+
+## Additional information
+
+X(:,10) - days_to_next_dividend: the number of days until the next dividend
+
+    Corresponds to data(:,15)
+
+X(:,11) - percent_return_next_dividend: the percentage of return on the next
+          dividend
+
+    Corresponds to data(:,16)
+
+
+
+2. Description of the Y set
+=====
+
+Y(:,1) - profitable
+  (1 = Profitable;
+   2 = Non-profitable)
+
+   This field is extracted from percent_change_next_weeks_price (the percentage
+   change in price of the stock in the following week)
+   If the percentage is negative, the investment will not be profitable. Else,
+   the investment will produce profit.
+
+   Corresponds to data(:,14)
+
+
+3. Description of data that I didn't used
+=====
+
+stock:
+  As we don't have enough training examples to make a specific prediction for
+  each stock (12 examples per quarter), we need to get rid of this field to
+  make a general prediction based only on values without taking into account
+  they belong to.
+
+  Corresponds to data(:,2)
