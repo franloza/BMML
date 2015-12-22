@@ -9,12 +9,6 @@ obtain the X set in the function [X, Y] = getClassificationData (DATA)
 
 ## Information fields
 
-X(:,1) - quarter
-  (1 = Jan-Mar;
-   2 = Apr=Jun)
-
-   Corresponds to data(:,1)
-
 X(:,2)  - month
   (1 = First month of the quarter;
    2 = Second month of the quarter;
@@ -45,13 +39,6 @@ X(:,4) - price_range - difference between the highest and the lowest price of
 
     Corresponds to data(:,5) - data(:,6)
 
-X(:,5) - next_week_price_difference: difference in price of the stock in the
-          following week
-
-    Result of next_weeks_close - next_weeks_open
-
-    Corresponds to data(:,13) - data(:,12)
-
 X(:,6) - percent_change_price: the percentage change in price throughout the week
 
     Corresponds to data(:,9)
@@ -73,18 +60,6 @@ X(:,9) - percent_change_volume_over_last_week: the percentage change in the numb
 
     Corresponds to data(:,10)
 
-## Additional information
-
-X(:,10) - days_to_next_dividend: the number of days until the next dividend
-
-    Corresponds to data(:,15)
-
-X(:,11) - percent_return_next_dividend: the percentage of return on the next
-          dividend
-
-    Corresponds to data(:,16)
-
-
 
 2. Description of the Y set
 =====
@@ -105,6 +80,16 @@ Y(:,1) - profitable
 3. Description of data that I didn't used
 =====
 
+quarter
+  (1 = Jan-Mar;
+   2 = Apr=Jun)
+
+   I will take advantadge of these value to classify the data for training or
+   validating. For this analysis I will train with the first quarter and
+   validate with the second quarter
+
+   Corresponds to data(:,1)
+
 stock:
   As we don't have enough training examples to make a specific prediction for
   each stock (12 examples per quarter), we need to get rid of this field to
@@ -112,3 +97,25 @@ stock:
   they belong to.
 
   Corresponds to data(:,2)
+
+#Future values
+
+We can't train our model using values that comes from the future taking into
+consideration that we need to predict using values from the present. These
+values are:
+
+X(:,5) - next_week_price_difference: difference in price of the stock in the
+          following week
+
+    Result of next_weeks_close - next_weeks_open
+
+    Corresponds to data(:,13) - data(:,12)
+
+days_to_next_dividend: the number of days until the next dividend
+
+    Corresponds to data(:,15)
+
+percent_return_next_dividend: the percentage of return on the next
+          dividend
+
+    Corresponds to data(:,16)

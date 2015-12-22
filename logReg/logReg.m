@@ -1,26 +1,51 @@
 1;
-source("extra/fmincg.m");
+source("logReg/learningCurves.m");
+source("logReg/graphics.m");
 warning("off");
 
 %Main function of the logistic regression analysis
 function [theta] = logReg(X,Y)
 
 #PARAMETERS
-lambda = 1;
-num_labels = 2; %Profitable or non-profitable
+lambda = 0;
+ex_q1 = 360;    %Examples of the first quarter
+ex_q2 = 390;    %Examples of the second quarter
 
-#Training
-theta = lr_training(X,Y,num_labels,lambda);
+
+#Extension of the features
+
+# Distribution of the examples
+
+%Training with the first quarter
+X_tra = X(1:ex_q1,:); Y_tra = Y(1:ex_q1,:);
+
+%Validating with the second quarter
+X_val = X(ex_q1+1:ex_q1+ex_q2,:); Y_val = Y(ex_q1+1:ex_q1+ex_q2,:);
+
+#{
+Learning Curves + training
+[errTraining, errValidation,theta] = learningCurves (X_tra,Y_tra,X_val,Y_val,
+                                     lambda);
+save learningCurves.tmp errTraining errValidation;
+#}
+
+load learningCurves.tmp
+
+G_LearningCurves(X_tra,errTraining, errValidation);
+
+#Only Training
+#theta = lr_training(X_tra,Y_tra,lambda);
+
 
 #Precision Analysis
-percentageHits = lr_percentageAccuracy(X, Y, theta)
+percentageHits = lr_percentageAccuracy(X_val, Y_val, theta);
 
 endfunction
 
 %===============================================================================
 
 %Training function
-function [all_theta] = lr_training(X,y,num_etiquetas,lambda)
+function [theta] = lr_training(X,y,lambda)
   m = length(y);
 	n = length(X(1,:));
 
@@ -31,12 +56,11 @@ function [all_theta] = lr_training(X,y,num_etiquetas,lambda)
 
 	options = optimset("GradObj", "on", "MaxIter", 1000);
 	theta = initial_theta;
-	for c = 1:num_etiquetas
-		[theta] = fmincg(@(t)(lr_costFunction(t, X, (y == c-1), lambda)), theta,
-    options);
-		# In each iteration we add a new column to our theta
-		all_theta(:,c) = theta;
-	endfor
+
+  #Optimization
+  options = optimset('GradObj','on','MaxIter',400);
+  [theta,cost] = fminunc(@(t)(lr_costFunction(t,X,y,lambda)), initial_theta,options);
+
 endfunction
 
 %===============================================================================
@@ -81,15 +105,14 @@ endfunction
 
 %===============================================================================
 %Function to classify examples
-function etiqueta = lr_prediction(X, theta)
+function prediction = lr_prediction(X, theta)
 	# Adding a column of ones to X
 	m = length(X(:,1));
 	X = [ones(m,1),X];
 
-	etiqueta = lr_hFunction(X,theta);
+	prediction = lr_hFunction(X,theta);
+  prediction = prediction > 0.5;
 
-	# We have to transpose etiqueta because the way max works
-	[useless, etiqueta] = max(etiqueta');
 endfunction
 
 %===============================================================================
@@ -99,6 +122,6 @@ function percentageHits = lr_percentageAccuracy(X, y, theta)
 	m = length(y);
 
 	# Whenever the expected value and the real value are the same is a hit
-	hits = sum(prediction == y');
+	hits = sum(prediction == y);
 	percentageHits = hits/m * 100;
 endfunction
