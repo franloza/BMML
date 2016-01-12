@@ -7,36 +7,26 @@ data = DATA.data;
 textdata = DATA.textdata;
 colheaders = DATA.colheaders;
 
-# Information fields
 
-# X(:,1)  - month
-#The months in data are classificated in their position in the calendar (From
-# January to June, 1 to 6). We need the number of month of the quarter (1 to 3).
-# That's why it's necessary to apply modulus 3 and covert the 0's in 3's
-months = mod(data(:,3),3);
-idx = months  == 0;
-months(idx) = 3;
-X(:,1) = months;
+# X(:,1) - price_difference
+X(:,1) = data(:,7) - data(:,4);
 
-# Price fields
+# X(:,2) - price_range
+X(:,2) = data(:,5) - data(:,6);
 
-# X(:,2) - price_difference
-X(:,2) = data(:,7) - data(:,4);
+# X(:,3) - percent_change_price
+X(:,3) = data(:,9);
 
-# X(:,3) - price_range
-X(:,3) = data(:,5) - data(:,6);
+# Volume fields
 
-# X(:,4) - percent_change_price
-X(:,4) = data(:,9);
+# X(:,4) - volume
+X(:,4) = data(:,8);
 
-# X(:,5) - volume
-X(:,5) = data(:,8);
+# X(:,5) - previous_week_volume
+X(:,5) = data(:,11);
 
-# X(:,6) - previous_week_volume
-X(:,6) = data(:,11);
-
-# X(:,7) - percent_change_volume_over_last_week
-X(:,7) = data(:,10);
+# X(:,6) - percent_change_volume_over_last_week
+X(:,6) = data(:,10);
 
 #Convert NA into zeroes
 X(isnan(X)) = 0;
@@ -48,4 +38,18 @@ profitable = data(:,14);
 Y(:,1) = (profitable > 0);
 
 
+endfunction
+
+function [X] = expandFeatures (X) 
+
+	# X(:,7) - Ratio price difference and range
+
+	X(:,7) = X(:,1) ./ X(:,2);
+
+	#Square of each feature (NOTE:FAILS EXPANDING THE FOURTH COLUMN)
+	
+	for i=1:3
+		X(:,7+i) = X(:,i).^2;
+	end
+	
 endfunction

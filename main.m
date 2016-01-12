@@ -4,8 +4,10 @@ source("logReg/logReg.m");
 
 DATA = importdata('data/dow_jones_index.data',',',1);
 
-#Extracts the data for classification
+#Extracts the data for classification and expand their fetures
 [X,Y] = getClassificationData(DATA);
+X = expandFeatures(X);
 
 #Index Analysis using logistic regression
-theta = logReg(X,Y);
+lCurves = true;
+theta = logReg(X,Y,lCurves);

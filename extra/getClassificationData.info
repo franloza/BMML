@@ -7,23 +7,10 @@ obtain the X set in the function [X, Y] = getClassificationData (DATA)
 2. Description of the X set
 =====
 
-## Information fields
-
-X(:,2)  - month
-  (1 = First month of the quarter;
-   2 = Second month of the quarter;
-   3 = Third month of the quarter;
-   )
-
-   I have extracted this field from the "date" field. I have considered that
-   selecting the months instead of specific dates is more meaningful and easy-
-   to-train data.
-
-   Corresponds to data(:,3)
 
 ## Price fields
 
-X(:,3) - price_difference - difference in price of the stock in the current week
+X(:,1) - price_difference - difference in price of the stock in the current week
 
     Result of close (close: the price of the stock at the end of the
     week) - open (Price of the stock at the beginning of the week)
@@ -31,7 +18,7 @@ X(:,3) - price_difference - difference in price of the stock in the current week
 
     Corresponds to data(:,7) - data(:,4)
 
-X(:,4) - price_range - difference between the highest and the lowest price of
+X(:,2) - price_range - difference between the highest and the lowest price of
           the stock during the week
 
     Result of high (the highest price of the stock during the week) -
@@ -39,22 +26,22 @@ X(:,4) - price_range - difference between the highest and the lowest price of
 
     Corresponds to data(:,5) - data(:,6)
 
-X(:,6) - percent_change_price: the percentage change in price throughout the week
+X(:,3) - percent_change_price: the percentage change in price throughout the week
 
     Corresponds to data(:,9)
 
 ## Volume fields
 
-X(:,7) - volume: the number of shares of stock that traded hands in the week
+X(:,4) - volume: the number of shares of stock that traded hands in the week
 
     Corresponds to data(:,8)
 
-X(:,8) - previous_week_volume: the number of shares of stock that traded hands
+X(:,5) - previous_week_volume: the number of shares of stock that traded hands
           in the previous week
 
     Corresponds to data(:,11)
 
-X(:,9) - percent_change_volume_over_last_week: the percentage change in the number
+X(:,6) - percent_change_volume_over_last_week: the percentage change in the number
           of shares of stock that traded hands for this week compared to the
           previous week
 

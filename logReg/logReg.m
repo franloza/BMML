@@ -4,41 +4,41 @@ source("logReg/graphics.m");
 warning("off");
 
 %Main function of the logistic regression analysis
-function [theta] = logReg(X,Y)
+function [theta] = logReg(X,Y,lCurves)
 
 #PARAMETERS
 lambda = 0;
-ex_q1 = 360;    %Examples of the first quarter
-ex_q2 = 390;    %Examples of the second quarter
+ex_q1 = 360;    #Examples of training
+ex_q2 = rows(X) - ex_q1;   #Examples of validation 
 
 
 #Extension of the features
 
 # Distribution of the examples
+rows(X)
 
 %Training with the first quarter
 X_tra = X(1:ex_q1,:); Y_tra = Y(1:ex_q1,:);
 
 %Validating with the second quarter
-X_val = X(ex_q1+1:ex_q1+ex_q2,:); Y_val = Y(ex_q1+1:ex_q1+ex_q2,:);
+X_val = X(ex_q1+1:rows(X),:); 
+Y_val = Y(ex_q1+1:rows(X),:);
 
-#{
-Learning Curves + training
-[errTraining, errValidation,theta] = learningCurves (X_tra,Y_tra,X_val,Y_val,
-                                     lambda);
-save learningCurves.tmp errTraining errValidation;
-#}
+#Learning Curves + training or just training
 
-load learningCurves.tmp
-
-G_LearningCurves(X_tra,errTraining, errValidation);
-
-#Only Training
-#theta = lr_training(X_tra,Y_tra,lambda);
-
+if (lCurves)
+	[errTraining, errValidation,theta] = learningCurves (X_tra,Y_tra,X_val,Y_val,lambda);
+	save learningCurves.tmp errTraining errValidation;
+	#Save the result in disk
+	#load learningCurves.tmp
+	G_LearningCurves(X_tra,errTraining, errValidation);
+else
+	#Only Training
+	theta = lr_training(X_tra,Y_tra,lambda);
+endif
 
 #Precision Analysis
-percentageHits = lr_percentageAccuracy(X_val, Y_val, theta);
+percentageHits = lr_percentageAccuracy(X_val, Y_val, theta)
 
 endfunction
 
@@ -46,20 +46,18 @@ endfunction
 
 %Training function
 function [theta] = lr_training(X,y,lambda)
-  m = length(y);
+	m = length(y);
 	n = length(X(1,:));
 
 	# Adding a column of ones to X
 	X = [ones(m,1),X];
 
 	initial_theta = zeros(n + 1, 1);
-
-	options = optimset("GradObj", "on", "MaxIter", 1000);
 	theta = initial_theta;
 
-  #Optimization
-  options = optimset('GradObj','on','MaxIter',400);
-  [theta,cost] = fminunc(@(t)(lr_costFunction(t,X,y,lambda)), initial_theta,options);
+	#Optimization
+	options = optimset('GradObj','on','MaxIter',1000);
+	[theta,cost] = fminunc(@(t)(lr_costFunction(t,X,y,lambda)), initial_theta,options);
 
 endfunction
 
@@ -73,7 +71,7 @@ function [J,grad] = lr_costFunction (theta,X,y,lambda)
 	m = length(y);
 	n = length(X(1,:));
 	J = ((1 / m) * sum(-y .* log(lr_hFunction(X,theta)) - (1 - y) .*
-  log (1 - lr_hFunction(X,theta))));
+ 	log (1 - lr_hFunction(X,theta))));
 	regularizationTerm1 = (lambda/(2 * m)) * sum(theta .^ 2);
 
 	J = J + regularizationTerm1;
