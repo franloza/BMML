@@ -29,9 +29,10 @@ Y_val = Y(ex_q1+1:rows(X),:);
 #Learning Curves + training or just training
 
 if (lCurves)
-	[errTraining, errValidation,theta] = learningCurves (X_tra,Y_tra,X_val,Y_val,lambda);
-	save learningCurves.tmp errTraining errValidation;
+	[errTraining, errValidation,theta] = learningCurves (X_tra,Y_tra,X_val,Y_val,
+																																				lambda);
 	#Save the result in disk
+	save learningCurves.tmp errTraining errValidation;
 	#load learningCurves.tmp
 	G_LearningCurves(X_tra,errTraining, errValidation);
 else
@@ -39,14 +40,27 @@ else
 	theta = lr_training(X_tra,Y_tra,lambda);
 endif
 
-#Results
-printf("RESULTS:\n")
-percentageHits = lr_percentageAccuracy(X_val, Y_val, theta);
-printf("Percentage of hits over validation examples: %f %%\n",percentageHits);
+
+#Report of the training:
+printf("LOGISTIC REGRESSION REPORT\n")
+printf("-------------------------------------------------------------------:\n")
+
+#Error results
+printf("ERROR ANALYSIS:\n")
 tra_error = lr_getError(X_tra, Y_tra, theta);
 printf("Error in training examples: %f\n",tra_error);
 val_error = lr_getError(X_val, Y_val, theta);
 printf("Error in validation examples: %f\n",val_error);
+printf("-------------------------------------------------------------------:\n")
+
+#Report of the optimum values
+[opt_threshold,precision,recall,fscore] = lr_optThreshold(X_val, Y_val,theta);
+printf("OPTIMUM THRESHOLD IN VALIDATION EXAMPLES:\n")
+printf("Optimum threshold: %f\n",opt_threshold);
+printf("Precision: %f\n",precision);
+printf("Recall: %f\n",recall);
+printf("Fscore: %f\n",fscore);
+printf("-------------------------------------------------------------------:\n")
 
 
 endfunction
@@ -66,7 +80,8 @@ function [theta,cost] = lr_training(X,y,lambda)
 
 	#Optimization
 	options = optimset('GradObj','on','MaxIter',1000);
-	[theta,cost] = fminunc(@(t)(lr_costFunction(t,X,y,lambda)), initial_theta,options);
+	[theta,cost] = fminunc(@(t)(lr_costFunction(t,X,y,lambda)), initial_theta,
+																																			options);
 
 endfunction
 
@@ -112,24 +127,72 @@ endfunction
 
 %===============================================================================
 %Function to classify examples
-function prediction = lr_prediction(X, theta)
+function prediction = lr_prediction(X, theta, threshold)
 	# Adding a column of ones to X
 	m = length(X(:,1));
 	X = [ones(m,1),X];
 
 	prediction = lr_hFunction(X,theta);
-  prediction = prediction > 0.5;
+  prediction = prediction > threshold;
 
 endfunction
 
 %===============================================================================
-%Function to calculate the percentage of accuracy of the trained model
-function percentageHits = lr_percentageAccuracy(X, y, theta)
-	prediction = lr_prediction(X, theta);
-	m = length(y);
-	# Whenever the expected value and the real value are the same is a hit
-	hits = sum(prediction == y);
-	percentageHits = hits/m * 100;
+%Function to extract the precision and the recall of a trained model given a
+%threshold
+function [precision,recall,fscore] = lr_precisionRecall(X, y,theta,threshold)
+	#Get the predicted y values
+	pred_y = lr_prediction(X, theta,threshold);
+
+	#Precision calculation
+
+	true_positives = sum(pred_y & y); #Logic AND to extract the predicted
+																		#positives that are true
+	pred_positives = sum(pred_y);
+	precision = true_positives / pred_positives;
+
+	#Recall calculation
+	actual_positives = sum(y);
+	test = [pred_y,y,pred_y&y];
+	recall = true_positives / actual_positives;
+
+	#F-score calculation
+	fscore =  (2*precision*recall) / (precision + recall);
+
+endfunction
+
+%===============================================================================
+%Function to extract the optimum threshold that guarantees the best trade-off
+%between precision and the recall of a trained model
+function [opt_threshold,precision,recall,fscore] = lr_optThreshold(X, y,theta)
+
+	#Try values from 0.01 to 0.99 in intervals of 0.01
+	#NOTE:It starts in 1 because octave starts its arrays in 1.
+	#That's why I sum one to the index
+	for i = 0:100
+		[precisions(i+1),recalls(i+1),fscores(i+1)] = lr_precisionRecall(X, y,theta,
+			i/100);
+	end
+
+	#Select the best F-score and the threashold associated to it
+	[max_Fscore, idx] = max(fscores);
+	opt_threshold = (idx-1)/100;
+	precision = precisions(idx);
+	recall = recalls(idx);
+	fscore = fscores(idx);
+	[max_prec, idx_max_prec] = max(precisions);
+
+	#Show the graphics
+	title("Optimum threshold graphic")
+	plot([0:0.01:1],recalls,"color", 'b',"linewidth",2);
+	xlabel("Threshold");
+	ylabel("Recall/Precision");
+	hold on;
+	plot([0:0.01:1],precisions,"color",'g',"linewidth",2);
+	plot ([opt_threshold; opt_threshold], [0; 1],"color", 'm',"linestyle","--","linewidth",2);
+	plot((idx_max_prec-1)/100,max_prec,"marker",'x',"color",'r',"markersize",10);
+	legend("Recall","Precision", "Optimum threshold","Maximum precision");
+	hold off;
 endfunction
 
 %===============================================================================
