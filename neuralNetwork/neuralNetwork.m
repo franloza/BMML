@@ -1,11 +1,13 @@
 1;
+source("neuralNetwork/learningCurves.m");
+source("neuralNetwork/graphics.m");
 source("extra/fmincg.m");
 source("extra/sigmoidFunction.m");
 source("extra/sigmoidDerivative.m");
 warning("off");
 
 %Main function of the logistic regression analysis
-function [theta] = neuralNetwork(X,Y)
+function [theta] = neuralNetwork(X,Y,lCurves)
 
 #PARAMETERS
 lambda = 0;
@@ -23,9 +25,32 @@ Y_tra = Y(1:n_tra,:);
 X_val = featureNormalize (X(n_tra+1:rows(X),:));
 Y_val = Y(n_tra+1:rows(X),:);
 
-[Theta1, Theta2] = nn_training (X_tra,Y_tra,num_inputs, num_hidden,lambda);
+#Initialize theta matrices with random values
+Theta1 = randomWeights (num_hidden,num_inputs);
+Theta2 = randomWeights (1,num_hidden);
 
-prediction = nn_prediction(X, Theta1, Theta2, 0.5);
+#Roll the matrices in one initial vector
+initial_params_nn = [Theta1(:); Theta2(:)];
+
+#Learning Curves + training or just training
+
+if (lCurves)
+	[errTraining, errValidation,Theta1,Theta2] = learningCurves (X_tra,Y_tra,
+		X_val,Y_val,num_inputs, num_hidden,lambda,initial_params_nn);
+
+	#Save/Load the result in disk (For debugging)
+	#save learningCurves.tmp errTraining errValidation Theta1 Theta2;
+	#load learningCurves.tmp
+	size(errTraining)
+	size(errValidation)
+
+	#Show the graphics of the learning curves
+	G_LearningCurves(X_tra,errTraining, errValidation);
+else
+	#Only Training
+	[Theta1, Theta2] = nn_training (X_tra,Y_tra,num_inputs, num_hidden,lambda,
+		initial_params_nn);
+endif
 
 #Report of the training:
 printf("NEURAL NETWORK REPORT\n")
@@ -39,9 +64,11 @@ printf("-------------------------------------------------------------------:\n")
 #Error results
 params_nn = [Theta1(:); Theta2(:)];
 printf("ERROR ANALYSIS:\n")
-tra_error = nn_getError(X_tra, Y_tra, Theta1, Theta2,params_nn, num_inputs, num_hidden)
+tra_error = nn_getError(X_tra, Y_tra, Theta1, Theta2,params_nn, num_inputs,
+	num_hidden);
 printf("Error in training examples: %f\n",tra_error);
-val_error = nn_getError(X_val, Y_val, Theta1, Theta2,params_nn, num_inputs, num_hidden)
+val_error = nn_getError(X_val, Y_val, Theta1, Theta2,params_nn, num_inputs,
+	num_hidden);
 printf("Error in validation examples: %f\n",val_error);
 printf("-------------------------------------------------------------------:\n")
 
@@ -58,14 +85,8 @@ endfunction
 
 %===============================================================================
 %Training function
-function [Theta1, Theta2] = nn_training (X,y,num_inputs, num_hidden,lambda)
-
-#Initialize theta matrices with random values
-Theta1 = randomWeights (num_hidden,num_inputs);
-Theta2 = randomWeights (1,num_hidden);
-
-#Roll the matrices in one initial vector
-initial_params_nn = [Theta1(:); Theta2(:)];
+function [Theta1, Theta2] = nn_training (X,y,num_inputs, num_hidden,lambda,
+	initial_params_nn)
 
 options = optimset("GradObj", "on", "MaxIter", 200);
 [params_nn] = fmincg (@(t)(nn_costFunction(t , num_inputs, num_hidden,X, y , lambda)) , initial_params_nn , options);
@@ -177,7 +198,7 @@ endfunction
 %Function to classify examples
 function prediction = nn_prediction(X, Theta1, Theta2, threshold)
 	prediction = nn_hFunction(X,Theta1, Theta2);
-    prediction = prediction > threshold;
+  prediction = prediction > threshold;
 endfunction
 
 %===============================================================================
@@ -213,7 +234,7 @@ function [opt_threshold,precision,recall,fscore] = nn_optThreshold(X, y,Theta1, 
 	#NOTE:It starts in 1 because octave starts its arrays in 1.
 	#That's why I sum one to the index
 	for i = 0:100
-		[precisions(i+1),recalls(i+1),fscores(i+1)] = nn_precisionRecall(X, y,Theta1, 
+		[precisions(i+1),recalls(i+1),fscores(i+1)] = nn_precisionRecall(X, y,Theta1,
 			Theta2,	i/100);
 	end
 
@@ -231,28 +252,7 @@ function [opt_threshold,precision,recall,fscore] = nn_optThreshold(X, y,Theta1, 
 endfunction
 
 %===============================================================================
-
-function [] = G_RecallPrecision(recalls,precisions,opt_threshold)
-
-figure;
-plot([0:0.01:1],recalls,"color", 'b',"linewidth",2);
-xlabel("Threshold");
-ylabel("Recall/Precision");
-hold on;
-plot([0:0.01:1],precisions,"color",'g',"linewidth",2);
-plot ([opt_threshold; opt_threshold], [0; 1],"color", 'm',"linestyle","--","linewidth",2);
-legend("Recall","Precision", "Optimum threshold");
-hold off;
-title("Recall/Precision with neural networks")
-
-endfunction
-
-%===============================================================================
 %Function to calculate the error produced by theta over a set of examples
 function error= nn_getError(X, y, Theta1, Theta2,params_nn, num_inputs, num_hidden)
-	m = rows(X);
-	X = [ones(m,1),X];
 	error =  nn_costFunction(params_nn, num_inputs, num_hidden, X, y,0);
 endfunction
-
-

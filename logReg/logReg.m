@@ -28,7 +28,7 @@ Y_val = Y(n_tra+1:rows(X),:);
 if (lCurves)
 	[errTraining, errValidation,theta] = learningCurves (X_tra,Y_tra,X_val,Y_val,
 		lambda);
-		
+
 	#Save/Load the result in disk (For debugging)
 	#save learningCurves.tmp errTraining errValidation theta;
 	#load learningCurves.tmp

@@ -9,8 +9,8 @@ DATA = importdata('data/dow_jones_index.data',',',1);
 [X,Y] = getClassificationData(DATA);
 
 #Index Analysis using logistic regression
-#lCurves = false;
+lCurves = false;
 #theta = logReg(X,Y,lCurves);
 
 #Index Analysis using Neural networks
-theta = neuralNetwork(X,Y);
+theta = neuralNetwork(X,Y,lCurves);
