@@ -10,41 +10,47 @@ function [theta] = logReg(X,Y,lCurves)
 
 #PARAMETERS
 lambda = 0;
-ex_q1 = 360;    #Examples of training
-ex_q2 = rows(X) - ex_q1;   #Examples of validation
+percentage_training = 0.7; #Training examples / Total examples
 
 #Extension of the features
 exp_X = expandFeatures(X);
 
 # Distribution of the examples (With normalization)
+n_tra = percentage_training * rows(X); # Number of training examples
+n_val = rows(X) - n_tra;   #Number of validation examples
 
-%Training with the first quarter
-X_tra = featureNormalize (exp_X(1:ex_q1,:));
-Y_tra = Y(1:ex_q1,:);
+X_tra = featureNormalize (exp_X(1:n_tra,:));
+Y_tra = Y(1:n_tra,:);
 
-%Validating with the second quarter
-X_val = featureNormalize (exp_X(ex_q1+1:rows(X),:));
-Y_val = Y(ex_q1+1:rows(X),:);
+X_val = featureNormalize (exp_X(n_tra+1:rows(X),:));
+Y_val = Y(n_tra+1:rows(X),:);
 
 #Learning Curves + training or just training
 
 if (lCurves)
 	[errTraining, errValidation,theta] = learningCurves (X_tra,Y_tra,X_val,Y_val,
-																																				lambda);
-	#Save the result in disk
-	save learningCurves.tmp errTraining errValidation;
+		lambda);
+		
+	#Save/Load the result in disk (For debugging)
+	#save learningCurves.tmp errTraining errValidation theta;
 	#load learningCurves.tmp
+
+	#Show the graphics of the learning curves
 	G_LearningCurves(X_tra,errTraining, errValidation);
 else
 	#Only Training
 	theta = lr_training(X_tra,Y_tra,lambda);
 endif
 
-
 #Report of the training:
 printf("LOGISTIC REGRESSION REPORT\n")
 printf("-------------------------------------------------------------------:\n")
+#Distribution
+printf("DISTRIBUTION:\n")
+printf("Training examples %d (%d%%)\n",n_tra,percentage_training*100);
+printf("Validation examples %d (%d%%)\n",n_val,(1-percentage_training)*100);
 
+printf("-------------------------------------------------------------------:\n")
 #Error results
 printf("ERROR ANALYSIS:\n")
 tra_error = lr_getError(X_tra, Y_tra, theta);
@@ -61,7 +67,6 @@ printf("Precision: %f\n",precision);
 printf("Recall: %f\n",recall);
 printf("Fscore: %f\n",fscore);
 printf("-------------------------------------------------------------------:\n")
-
 
 endfunction
 
@@ -182,17 +187,9 @@ function [opt_threshold,precision,recall,fscore] = lr_optThreshold(X, y,theta)
 	fscore = fscores(idx);
 	[max_prec, idx_max_prec] = max(precisions);
 
-	#Show the graphics
-	title("Optimum threshold graphic")
-	plot([0:0.01:1],recalls,"color", 'b',"linewidth",2);
-	xlabel("Threshold");
-	ylabel("Recall/Precision");
-	hold on;
-	plot([0:0.01:1],precisions,"color",'g',"linewidth",2);
-	plot ([opt_threshold; opt_threshold], [0; 1],"color", 'm',"linestyle","--","linewidth",2);
-	plot((idx_max_prec-1)/100,max_prec,"marker",'x',"color",'r',"markersize",10);
-	legend("Recall","Precision", "Optimum threshold","Maximum precision");
-	hold off;
+	#Show the graphics of the recall-precision results
+	G_RecallPrecision(recalls,precisions,opt_threshold);
+
 endfunction
 
 %===============================================================================
