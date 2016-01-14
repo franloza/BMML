@@ -1,4 +1,3 @@
-1;
 function [X_norm, mu, sigma] = featureNormalize(X)
 %FEATURENORMALIZE Normalizes the features in X
 %   FEATURENORMALIZE(X) returns a normalized version of X where

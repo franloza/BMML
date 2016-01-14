@@ -27,6 +27,12 @@ X(:,5) = data(:,11);
 # X(:,6) - percent_change_volume_over_last_week
 X(:,6) = data(:,10);
 
+# X(:,7) - days_to_next_dividend
+X(:,7) = data(:,15);
+
+# X(:,8) - percent_return_next_dividend
+X(:,8) = data(:,16);
+
 #Convert NA into zeroes
 X(isnan(X)) = 0;
 

@@ -48,6 +48,16 @@ X(:,6) - percent_change_volume_over_last_week: the percentage change in the numb
     Corresponds to data(:,10)
 
 
+X(:,7) - days_to_next_dividend: the number of days until the next dividend
+
+    Corresponds to data(:,15)
+
+X(:,8) - percent_return_next_dividend: the percentage of return on the next
+          dividend
+
+    Corresponds to data(:,16)
+
+
 2. Description of the Y set
 =====
 
@@ -98,11 +108,3 @@ X(:,5) - next_week_price_difference: difference in price of the stock in the
 
     Corresponds to data(:,13) - data(:,12)
 
-days_to_next_dividend: the number of days until the next dividend
-
-    Corresponds to data(:,15)
-
-percent_return_next_dividend: the percentage of return on the next
-          dividend
-
-    Corresponds to data(:,16)

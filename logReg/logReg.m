@@ -2,6 +2,7 @@
 source("logReg/learningCurves.m");
 source("logReg/graphics.m");
 source("extra/featureNormalize.m");
+source("extra/sigmoidFunction.m");
 warning("off");
 
 %Main function of the logistic regression analysis
@@ -118,13 +119,6 @@ endfunction
 function [result] = lr_hFunction (X,theta)
 	z = theta' * X';
 	result = sigmoidFunction(z)';
-endfunction
-
-%===============================================================================
-
-%Sigmoid Function
-function [result] = sigmoidFunction (z)
-  result = 1 ./ (1 + e .^ (-z));
 endfunction
 
 %===============================================================================
