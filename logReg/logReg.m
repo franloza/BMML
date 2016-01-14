@@ -2,7 +2,6 @@
 source("logReg/learningCurves.m");
 source("logReg/graphics.m");
 source("extra/featureNormalize.m");
-source("extra/expandFeatures.m");
 warning("off");
 
 %Main function of the logistic regression analysis
@@ -12,17 +11,15 @@ function [theta] = logReg(X,Y,lCurves)
 lambda = 0;
 percentage_training = 0.7; #Training examples / Total examples
 
-#Extension of the features
-exp_X = expandFeatures(X);
 
 # Distribution of the examples (With normalization)
 n_tra = percentage_training * rows(X); # Number of training examples
 n_val = rows(X) - n_tra;   #Number of validation examples
 
-X_tra = featureNormalize (exp_X(1:n_tra,:));
+X_tra = featureNormalize (X(1:n_tra,:));
 Y_tra = Y(1:n_tra,:);
 
-X_val = featureNormalize (exp_X(n_tra+1:rows(X),:));
+X_val = featureNormalize (X(n_tra+1:rows(X),:));
 Y_val = Y(n_tra+1:rows(X),:);
 
 #Learning Curves + training or just training
