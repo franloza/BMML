@@ -1,5 +1,5 @@
 1;
-source("neuralNetwork/learningCurves.m");
+source("neuralNetwork/nn_learningCurves.m");
 source("neuralNetwork/graphics.m");
 source("extra/fmincg.m");
 source("extra/sigmoidFunction.m");
@@ -12,7 +12,7 @@ function [theta] = neuralNetwork(X,Y,lCurves)
 #PARAMETERS
 lambda = 0;
 percentage_training = 0.7; #Training examples / Total examples
-num_inputs = 8;
+num_inputs = columns(X);
 num_hidden = 6;
 
 # Distribution of the examples (With normalization)
@@ -35,7 +35,7 @@ initial_params_nn = [Theta1(:); Theta2(:)];
 #Learning Curves + training or just training
 
 if (lCurves)
-	[errTraining, errValidation,Theta1,Theta2] = learningCurves (X_tra,Y_tra,
+	[errTraining, errValidation,Theta1,Theta2] = nn_learningCurves (X_tra,Y_tra,
 		X_val,Y_val,num_inputs, num_hidden,lambda,initial_params_nn);
 
 	#Save/Load the result in disk (For debugging)
@@ -45,7 +45,7 @@ if (lCurves)
 	size(errValidation)
 
 	#Show the graphics of the learning curves
-	G_LearningCurves(X_tra,errTraining, errValidation);
+	G_nn_LearningCurves(X_tra,errTraining, errValidation);
 else
 	#Only Training
 	[Theta1, Theta2] = nn_training (X_tra,Y_tra,num_inputs, num_hidden,lambda,
@@ -53,7 +53,7 @@ else
 endif
 
 #Report of the training:
-printf("NEURAL NETWORK REPORT\n")
+printf("\nNEURAL NETWORK REPORT\n")
 printf("-------------------------------------------------------------------:\n")
 #Distribution
 printf("DISTRIBUTION:\n")
@@ -211,14 +211,24 @@ function [precision,recall,fscore] = nn_precisionRecall(X, y,Theta1, Theta2,thre
 	#Precision calculation
 
 	true_positives = sum(pred_y & y); #Logic AND to extract the predicted
-									  #positives that are true
+																		#positives that are true
 	pred_positives = sum(pred_y);
-	precision = true_positives / pred_positives;
+
+	if(pred_positives != 0)
+		precision = true_positives / pred_positives;
+	else
+		precision = 0;
+	endif
 
 	#Recall calculation
 	actual_positives = sum(y);
 	test = [pred_y,y,pred_y&y];
-	recall = true_positives / actual_positives;
+
+	if(actual_positives != 0)
+		recall = true_positives / actual_positives;
+	else
+		recall = 0;
+	endif
 
 	#F-score calculation
 	fscore =  (2*precision*recall) / (precision + recall);
@@ -230,24 +240,22 @@ endfunction
 %between precision and the recall of a trained model
 function [opt_threshold,precision,recall,fscore] = nn_optThreshold(X, y,Theta1, Theta2)
 
-	#Try values from 0.01 to 0.99 in intervals of 0.01
-	#NOTE:It starts in 1 because octave starts its arrays in 1.
-	#That's why I sum one to the index
-	for i = 0:100
-		[precisions(i+1),recalls(i+1),fscores(i+1)] = nn_precisionRecall(X, y,Theta1,
+	#Try values from 0.01 to 1 in intervals of 0.01
+	for i = 1:100
+		[precisions(i),recalls(i),fscores(i)] = nn_precisionRecall(X, y,Theta1,
 			Theta2,	i/100);
 	end
 
 	#Select the best F-score and the threashold associated to it
 	[max_Fscore, idx] = max(fscores);
-	opt_threshold = (idx-1)/100;
+	opt_threshold = (idx)/100;
 	precision = precisions(idx);
 	recall = recalls(idx);
 	fscore = fscores(idx);
 	[max_prec, idx_max_prec] = max(precisions);
 
 	#Show the graphics of the recall-precision results
-	G_RecallPrecision(recalls,precisions,opt_threshold);
+	G_nn_RecallPrecision(recalls,precisions,opt_threshold);
 
 endfunction
 

@@ -1,6 +1,7 @@
 source("data/getData.m");
 source("logReg/logReg.m");
 source("neuralNetwork/neuralNetwork.m");
+source("svm/svm.m");
 #Loads the raw data from the data folder
 
 DATA = importdata('data/dow_jones_index.data',',',1);
@@ -10,7 +11,10 @@ DATA = importdata('data/dow_jones_index.data',',',1);
 
 #Index Analysis using logistic regression
 lCurves = false;
-#theta = logReg(X,Y,lCurves);
+theta = logReg(X,Y,lCurves);
 
 #Index Analysis using Neural networks
 theta = neuralNetwork(X,Y,lCurves);
+
+#Index Analysis using Suppor Vector Machines
+model = svm(X,Y);

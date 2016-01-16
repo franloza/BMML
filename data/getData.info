@@ -30,32 +30,35 @@ X(:,3) - percent_change_price: the percentage change in price throughout the wee
 
     Corresponds to data(:,9)
 
-## Volume fields
+#Dividend fields
 
-X(:,4) - volume: the number of shares of stock that traded hands in the week
+X(:,4) - days_to_next_dividend: the number of days until the next dividend
+
+    Corresponds to data(:,15)
+
+X(:,5) - percent_return_next_dividend: the percentage of return on the next
+          dividend
+
+    Corresponds to data(:,16)
+
+# Volume fields
+
+X(:,6) - volume: the number of shares of stock that traded hands in the week
 
     Corresponds to data(:,8)
 
-X(:,5) - previous_week_volume: the number of shares of stock that traded hands
+X(:,7) - previous_week_volume: the number of shares of stock that traded hands
           in the previous week
 
     Corresponds to data(:,11)
 
-X(:,6) - percent_change_volume_over_last_week: the percentage change in the number
+X(:,8) - percent_change_volume_over_last_week: the percentage change in the number
           of shares of stock that traded hands for this week compared to the
           previous week
 
     Corresponds to data(:,10)
 
 
-X(:,7) - days_to_next_dividend: the number of days until the next dividend
-
-    Corresponds to data(:,15)
-
-X(:,8) - percent_return_next_dividend: the percentage of return on the next
-          dividend
-
-    Corresponds to data(:,16)
 
 
 2. Description of the Y set
@@ -107,4 +110,3 @@ X(:,5) - next_week_price_difference: difference in price of the stock in the
     Result of next_weeks_close - next_weeks_open
 
     Corresponds to data(:,13) - data(:,12)
-

@@ -7,6 +7,8 @@ data = DATA.data;
 textdata = DATA.textdata;
 colheaders = DATA.colheaders;
 
+#Price fields
+
 # X(:,1) - price_difference
 X(:,1) = data(:,7) - data(:,4);
 
@@ -16,22 +18,26 @@ X(:,2) = data(:,5) - data(:,6);
 # X(:,3) - percent_change_price
 X(:,3) = data(:,9);
 
+#Dividend fields
+
+# X(:,4) - days_to_next_dividend
+X(:,4) = data(:,15);
+
+# X(:,5) - percent_return_next_dividend
+X(:,5) = data(:,16);
+
 # Volume fields
 
-# X(:,4) - volume
-X(:,4) = data(:,8);
+# X(:,6) - volume
 
-# X(:,5) - previous_week_volume
-X(:,5) = data(:,11);
+#X(:,6) = data(:,8);
 
-# X(:,6) - percent_change_volume_over_last_week
-X(:,6) = data(:,10);
+# X(:,7) - previous_week_volume
+#X(:,7) = data(:,11);
 
-# X(:,7) - days_to_next_dividend
-X(:,7) = data(:,15);
+# X(:,8) - percent_change_volume_over_last_week
+#X(:,7) = data(:,10);
 
-# X(:,8) - percent_return_next_dividend
-X(:,8) = data(:,16);
 
 #Convert NA into zeroes
 X(isnan(X)) = 0;

@@ -1,5 +1,5 @@
 1;
-source("logReg/learningCurves.m");
+source("logReg/lr_learningCurves.m");
 source("logReg/graphics.m");
 source("extra/featureNormalize.m");
 source("extra/sigmoidFunction.m");
@@ -26,7 +26,7 @@ Y_val = Y(n_tra+1:rows(X),:);
 #Learning Curves + training or just training
 
 if (lCurves)
-	[errTraining, errValidation,theta] = learningCurves (X_tra,Y_tra,X_val,Y_val,
+	[errTraining, errValidation,theta] = lr_learningCurves (X_tra,Y_tra,X_val,Y_val,
 		lambda);
 
 	#Save/Load the result in disk (For debugging)
@@ -34,14 +34,14 @@ if (lCurves)
 	#load learningCurves.tmp
 
 	#Show the graphics of the learning curves
-	G_LearningCurves(X_tra,errTraining, errValidation);
+	G_lr_LearningCurves(X_tra,errTraining, errValidation);
 else
 	#Only Training
 	theta = lr_training(X_tra,Y_tra,lambda);
 endif
 
 #Report of the training:
-printf("LOGISTIC REGRESSION REPORT\n")
+printf("\nLOGISTIC REGRESSION REPORT\n")
 printf("-------------------------------------------------------------------:\n")
 #Distribution
 printf("DISTRIBUTION:\n")
@@ -145,13 +145,23 @@ function [precision,recall,fscore] = lr_precisionRecall(X, y,theta,threshold)
 	true_positives = sum(pred_y & y); #Logic AND to extract the predicted
 																		#positives that are true
 	pred_positives = sum(pred_y);
-	precision = true_positives / pred_positives;
+
+	if(pred_positives != 0)
+		precision = true_positives / pred_positives;
+	else
+		precision = 0;
+	endif
 
 	#Recall calculation
 	actual_positives = sum(y);
 	test = [pred_y,y,pred_y&y];
-	recall = true_positives / actual_positives;
 
+	if(actual_positives != 0)
+		recall = true_positives / actual_positives;
+	else
+		recall = 0;
+	endif
+	
 	#F-score calculation
 	fscore =  (2*precision*recall) / (precision + recall);
 
@@ -162,24 +172,22 @@ endfunction
 %between precision and the recall of a trained model
 function [opt_threshold,precision,recall,fscore] = lr_optThreshold(X, y,theta)
 
-	#Try values from 0.01 to 0.99 in intervals of 0.01
-	#NOTE:It starts in 1 because octave starts its arrays in 1.
-	#That's why I sum one to the index
-	for i = 0:100
-		[precisions(i+1),recalls(i+1),fscores(i+1)] = lr_precisionRecall(X, y,theta,
+	#Try values from 0.01 to 1 in intervals of 0.01
+	for i = 1:100
+		[precisions(i),recalls(i),fscores(i)] = lr_precisionRecall(X, y,theta,
 			i/100);
 	end
 
 	#Select the best F-score and the threashold associated to it
 	[max_Fscore, idx] = max(fscores);
-	opt_threshold = (idx-1)/100;
+	opt_threshold = (idx)/100;
 	precision = precisions(idx);
 	recall = recalls(idx);
 	fscore = fscores(idx);
 	[max_prec, idx_max_prec] = max(precisions);
 
 	#Show the graphics of the recall-precision results
-	G_RecallPrecision(recalls,precisions,opt_threshold);
+	G_lr_RecallPrecision(recalls,precisions,opt_threshold);
 
 endfunction
 
