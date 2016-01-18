@@ -1,0 +1,126 @@
+1. Introduction
+
+The following points introduces the translation from the original set to the
+raw data set that will be loaded to the program (raw-data.csv)
+raw-data-lite.csv contains 10% of the examples (4119), randomly selected from
+raw-data.csv
+
+2. Description of the X set
+=====
+
+#Bank Client Data
+
+X(:,1) - age (numeric)
+
+X(:,2) - job : type of job (categorical) { 
+		"admin." = 1,
+		"blue-collar" = 2
+		"entrepreneur" = 3
+		"housemaid" = 4
+		"management" = 5
+		"retired" = 6
+		"self-employed" = 7
+		"services" = 8
+		"student" = 9
+		"technician" = 10
+		"unemployed" = 11
+		"unknown" = 0}
+
+X(:,3) - marital : marital status (categorical)
+		"divorced" = 1
+		"married" = 2
+		"single" = 3
+		"unknown" = 0)}
+	NOTE: "divorced" means divorced or widowed
+
+X(:,4) - education (categorical) {		
+		"basic.4y" = 1
+		"basic.6y" = 2
+		"basic.9y" = 3
+		"high.school" = 4
+		"illiterate" = 5
+		"professional.course" = 6
+		"university.degree" = 7
+		"unknown" = 8}
+
+X(:,5) - default: has credit in default? (categorical) {
+		"no" = 1
+		"yes" = 2
+		"unknown" = 0}
+
+X(:,6) - housing: has housing loan? (categorical){
+		"no" = 1
+		"yes" = 2
+		"unknown" = 0}
+
+X(:,7) - loan: has personal loan? (categorical) {
+		"no" = 1
+		"yes" = 2
+		"unknown" = 0}
+
+# Data related with the last contact of the current campaign
+
+X(:,8)- contact: contact communication type (categorical) {
+		"cellular"= 1
+		"telephone" = 2} 
+
+X(:,9) - month: last contact month of year (categorical)
+		"jan" = 1
+ 		"feb" = 2
+ 		"mar" = 3
+ 		...
+ 		"nov" = 11
+		"dec"  = 12}
+
+X(:,10) - day_of_week: last contact day of the week (categorical) {
+		"mon" = 1
+		"tue" = 2
+		"wed" = 3
+		"thu" = 4
+		"fri" = 5}
+
+#Other attributes
+
+X(:,11) - campaign: number of contacts performed during this campaign and 
+	for this client (numeric, includes last contact)
+
+X(:,12) - pdays: number of days that passed by after the client was last contacted 
+	from a previous campaign (numeric; 0 means client was not previously contacted)
+
+X(:,13)- previous: number of contacts performed before this campaign and for this 
+	client (numeric)
+
+X(:,14)- poutcome: outcome of the previous marketing campaign (categorical) {
+	"failure" = 1
+	"nonexistent" = 2
+	"success" = 3}
+
+# social and economic context attributes
+
+X(:,15) - emp.var.rate: employment variation rate - quarterly indicator (numeric)
+
+X(:,16) - cons.price.idx: consumer price index - monthly indicator (numeric)     
+
+X(:,17) - cons.conf.idx: consumer confidence index - monthly indicator (numeric)     
+
+X(:,18) - euribor3m: euribor 3 month rate - daily indicator (numeric)
+
+X(:,19) - nr.employed: number of employees - quarterly indicator (numeric)
+
+
+2. Description of the Y set (Output variable)
+=====
+
+Y(:,1) - subscription - has the client subscribed a term deposit? (binary) {
+		"no" = 0
+		"yes" = 1}
+
+3. Data that I didn't include
+=====
+
+duration: last contact duration, in seconds (numeric):
+
+	This attribute highly affects the output target (e.g., if duration=0 then y="no"). 
+	Yet, the duration is not known before a call is performed. 
+	Also, after the end of the call y is obviously known. 
+

@@ -10,19 +10,30 @@ warning("off");
 function [theta] = neuralNetwork(X,Y,lCurves)
 
 #PARAMETERS
+normalize = false; #Normalize the data or not
 lambda = 0;
 percentage_training = 0.7; #Training examples / Total examples
-num_inputs = columns(X);
-num_hidden = 6;
+num_inputs = columns(X); #Number of nodes of the input layer
+num_hidden = 20; #Number of nodes of the hidden layer
+
+#The learning frequency only applies to learning curves. Each learningFreq
+#iterations, the error is recalculated. #The lower learningFreq is, the slower
+#the calculation will be
+learningFreq = fix(rows(X) * .2);
 
 # Distribution of the examples (With normalization)
-n_tra = percentage_training * rows(X); # Number of training examples
+n_tra = fix(percentage_training * rows(X)); # Number of training examples
 n_val = rows(X) - n_tra;   #Number of validation examples
 
-X_tra = featureNormalize (X(1:n_tra,:));
-Y_tra = Y(1:n_tra,:);
+if(normalize)
+	X_tra = featureNormalize (X(1:n_tra,:));
+	X_val = featureNormalize (X(n_tra+1:rows(X),:));
+else
+	X_tra = X(1:n_tra,:);
+	X_val = X(n_tra+1:rows(X),:);
+endif
 
-X_val = featureNormalize (X(n_tra+1:rows(X),:));
+Y_tra = Y(1:n_tra,:);
 Y_val = Y(n_tra+1:rows(X),:);
 
 #Initialize theta matrices with random values
@@ -36,16 +47,16 @@ initial_params_nn = [Theta1(:); Theta2(:)];
 
 if (lCurves)
 	[errTraining, errValidation,Theta1,Theta2] = nn_learningCurves (X_tra,Y_tra,
-		X_val,Y_val,num_inputs, num_hidden,lambda,initial_params_nn);
+		X_val,Y_val,num_inputs, num_hidden,lambda,initial_params_nn,learningFreq);
 
 	#Save/Load the result in disk (For debugging)
-	#save learningCurves.tmp errTraining errValidation Theta1 Theta2;
+	save learningCurves.tmp errTraining errValidation Theta1 Theta2;
 	#load learningCurves.tmp
 	size(errTraining)
 	size(errValidation)
 
 	#Show the graphics of the learning curves
-	G_nn_LearningCurves(X_tra,errTraining, errValidation);
+	G_nn_LearningCurves(X_tra,errTraining, errValidation,learningFreq);
 else
 	#Only Training
 	[Theta1, Theta2] = nn_training (X_tra,Y_tra,num_inputs, num_hidden,lambda,

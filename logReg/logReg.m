@@ -9,32 +9,42 @@ warning("off");
 function [theta] = logReg(X,Y,lCurves)
 
 #PARAMETERS
-lambda = 0;
-percentage_training = 0.7; #Training examples / Total examples
+normalize = false; #Normalize the data or not
+lambda = 500; #Regularization term
+percentage_training = 0.8; #Training examples / Total examples
 
+#The learning frequency only applies to learning curves. Each learningFreq
+#iterations, the error is recalculated. #The lower learningFreq is, the slower
+#the calculation will be
+learningFreq = fix(rows(X) * 0.1);
 
 # Distribution of the examples (With normalization)
-n_tra = percentage_training * rows(X); # Number of training examples
+n_tra = fix(percentage_training * rows(X)); # Number of training examples
 n_val = rows(X) - n_tra;   #Number of validation examples
 
-X_tra = featureNormalize (X(1:n_tra,:));
-Y_tra = Y(1:n_tra,:);
+if(normalize)
+	X_tra = featureNormalize (X(1:n_tra,:));
+	X_val = featureNormalize (X(n_tra+1:rows(X),:));
+else
+	X_tra = X(1:n_tra,:);
+	X_val = X(n_tra+1:rows(X),:);
+endif
 
-X_val = featureNormalize (X(n_tra+1:rows(X),:));
+Y_tra = Y(1:n_tra,:);
 Y_val = Y(n_tra+1:rows(X),:);
 
 #Learning Curves + training or just training
 
 if (lCurves)
 	[errTraining, errValidation,theta] = lr_learningCurves (X_tra,Y_tra,X_val,Y_val,
-		lambda);
+		lambda,learningFreq);
 
 	#Save/Load the result in disk (For debugging)
-	#save learningCurves.tmp errTraining errValidation theta;
+	save learningCurves.tmp errTraining errValidation theta;
 	#load learningCurves.tmp
 
 	#Show the graphics of the learning curves
-	G_lr_LearningCurves(X_tra,errTraining, errValidation);
+	G_lr_LearningCurves(X_tra,errTraining, errValidation,learningFreq);
 else
 	#Only Training
 	theta = lr_training(X_tra,Y_tra,lambda);
@@ -161,7 +171,7 @@ function [precision,recall,fscore] = lr_precisionRecall(X, y,theta,threshold)
 	else
 		recall = 0;
 	endif
-	
+
 	#F-score calculation
 	fscore =  (2*precision*recall) / (precision + recall);
 

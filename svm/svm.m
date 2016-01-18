@@ -5,67 +5,81 @@ source("extra/gaussianKernel.m");
 warning("off");
 
 %Main function of the logistic regression analysis
-function [bestModel] = svm(X,Y)
+function [model] = svm(X,Y)
 
+%-------------------------------------------------------------------------------
 #PARAMETERS
-percentage_training = 0.6; #Training examples / Total examples
-percentage_adjustment= 0.1; #Adjustment examples / Total examples
+normalize = false; #Normalize the data or not
+percentage_training = 0.8; #Training examples / Total examples
+adjusting = false; #Activates adjustment process
+C = 1; #Default C parameter
+sigma = 1; #Default sigma parameter
+
+#ADJUSTMENT PARAMETERS (ONLY APPLIES IF adjusting = true)
+percentage_adjustment= 0.02; #Adjustment examples / Total examples
+values = [0.01,1,10,100]; #Possible combinations of C and sigma
+
+%------------------------------------------------------------------------------
 
 # Distribution of the examples (With normalization)
-n_tra = percentage_training * rows(X); # Number of training examples
-n_adj = percentage_adjustment * rows(X); # Number of adjustment examples
+n_tra = fix(percentage_training * rows(X)); # Number of training examples
+n_adj = fix(percentage_adjustment * rows(X)); # Number of adjustment examples
 n_val = rows(X) - (n_tra + n_adj);   #Number of validation examples
 
-X_tra = featureNormalize (X(1:n_tra,:));
+if(normalize)
+	X_tra = featureNormalize (X(1:n_tra,:));
+	X_adj = featureNormalize (X(n_tra+1:n_tra + n_adj,:));
+	X_val = featureNormalize (X(n_tra + n_adj+1:rows(X),:));
+else
+	X_tra = X(1:n_tra,:);
+	X_adj = X(n_tra+1:n_tra + n_adj,:);
+	X_val = X(n_tra + n_adj+1:rows(X),:);
+endif
+
 Y_tra = Y(1:n_tra,:);
-
-X_adj = featureNormalize (X(n_tra+1:n_tra + n_adj,:));
 Y_adj = Y(n_tra+1:n_tra + n_adj,:);
-
-X_val = featureNormalize (X(n_tra + n_adj+1:rows(X),:));
 Y_val = Y(n_tra + n_adj+1:rows(X),:);
 
-# Adjustment process(Search of optimal C and sigma)
+if(adjusting)
+	# Adjustment process(Search of optimal C and sigma)
 
-#We assume that the best values for C and sigma are between 0.01 and 30
-values = [0.01, .03, .1, .3, 1, 3, 10, 30];
+	#Prove the different combiations for the values of C and sigma
+	fprintf('\nAdjusting ...');
+	dots = 12;
+	for i=1:length(values)
+		for j=1:length(values)
+			model = svmTrain(X_tra, Y_tra, values(i),false, @(x1, x2)gaussianKernel(x1,
+			x2,values(j)));
+			#We select the best F-Score for each pair of values
+			[n,n,FScoreMatrix(i, j)] = svm_precisionRecall(X_adj, Y_adj,model);
+			fprintf('.');
+	    dots = dots + 1;
+	    if dots > 78
+	        dots = 0;
+	        fprintf('\n');
+	    end
+			fflush(stdout);
+	 	endfor
+	endfor
+	fprintf(' Done! \n\n');
+	#Draw a 3D graphics for the adjustment results
+	svm_adjustmentPlot(values,FScoreMatrix);
 
-#Prove the different combiations for the values of C and sigma
-fprintf('\nAdjusting ...');
-dots = 12;
-for i=1:length(values)
-	for j=1:length(values)
-		model = svmTrain(X_tra, Y_tra, values(i),false, @(x1, x2)gaussianKernel(x1,
-		x2,values(j)));
-		#We select the best F-Score for each pair of values
-		[n,n,FScoreMatrix(i, j)] = svm_precisionRecall(X_adj, Y_adj,model);
-		fprintf('.');
-    dots = dots + 1;
-    if dots > 78
-        dots = 0;
-        fprintf('\n');
-    end
-		fflush(stdout);
- 	endfor
-endfor
-fprintf(' Done! \n\n');
-#Draw a 3D graphics for the adjustment results
-svm_adjustmentPlot(values,FScoreMatrix);
+	#We chose the maximum value(s) of fscore and extract the values of C and sigma
+	#for this value
+	bestFScore = max(max(FScoreMatrix));
 
-#We chose the maximum value(s) of accuracy and extract the values of C and sigma
-# for this value
-bestFScore = max(max(FScoreMatrix));
+	[bestC, bestSigma] = find(bestFScore == FScoreMatrix);
 
-[bestC, bestSigma] = find(bestFScore == FScoreMatrix);
-
-# Select the fist in case two or more sigma and C have the best accuracy
-bestC = bestC(1);
-bestSigma = bestSigma(1);
+	# Select the fist in case two or more sigma and C have the best accuracy
+	C = bestC(1);
+	sigma = bestSigma(1);
+endif
 
 #We extract the model using the training examples and the selected values of C
 #and sigma
-bestModel = svmTrain(X_tra, Y_tra, values(bestC),true, @(x1, x2)gaussianKernel(
-	x1, x2, values(bestSigma)));
+model = svmTrain(X_tra, Y_tra, values(C),true, @(x1, x2)gaussianKernel(
+	x1, x2, values(sigma)));
 
 #Report of the training:
 printf("\nSVM REPORT\n")
@@ -74,14 +88,19 @@ printf("-------------------------------------------------------------------:\n")
 printf("DISTRIBUTION:\n")
 printf("Training examples %d (%d%%)\n",n_tra,percentage_training*100);
 printf("Adjustment examples %d (%d%%)\n",n_adj,percentage_adjustment*100);
+if(adjusting)
 printf("Validation examples %d (%d%%)\n",n_val,((1-(percentage_training +
 	percentage_adjustment))*100));
+endif
 
+if(adjusting)
 printf("-------------------------------------------------------------------:\n")
-#Error results
+#Adjustment results
 printf("ADJUSTMENT ANALYSIS\n")
-printf("Best value for C: %d\n",bestC);
-printf("Best Value for sigma: %d\n",bestSigma);
+printf("Best value for C: %d\n",C);
+printf("Best Value for sigma: %d\n",sigma);
+endif
+
 printf("-------------------------------------------------------------------:\n")
 
 #Report of the optimum values

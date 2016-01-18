@@ -4,17 +4,17 @@
 #Relationship between the evolution of the error over the training examples and
 #validation examples
 
-function [] = G_lr_LearningCurves(X,errTraining, errValidation)
+function [] = G_lr_LearningCurves(X,errTraining, errValidation,learningFreq)
 
 figure;
 
-
 #Number of training examples
 m = rows(X);
-mVector = [11:m];
+mVector = [1:columns(errTraining)];
 
+iterationsStr = sprintf("Iterations (x%i)", learningFreq);
 plot(mVector,errTraining,"color",'b',"Linewidth", 2);
-xlabel("Iterations");
+xlabel(iterationsStr);
 ylabel("Error");
 hold on;
 plot(mVector,errValidation,"color",'g',"Linewidth", 2);
