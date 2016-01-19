@@ -21,24 +21,31 @@ values = [0.01,1,10,100]; #Possible combinations of C and sigma
 
 %------------------------------------------------------------------------------
 
-# Distribution of the examples (With normalization)
+# Distribution of the examples
 n_tra = fix(percentage_training * rows(X)); # Number of training examples
-n_adj = fix(percentage_adjustment * rows(X)); # Number of adjustment examples
-n_val = rows(X) - (n_tra + n_adj);   #Number of validation examples
+X_tra = X(1:n_tra,:);
+Y_tra = Y(1:n_tra,:);
+
+if(adjusting)
+		n_adj = fix(percentage_adjustment * rows(X)); #Number of adjustment examples
+		n_val = rows(X) - (n_tra + n_adj);   #Number of validation examples
+		X_adj = X(n_tra+1:n_tra + n_adj,:);
+		X_val = X(n_tra + n_adj+1:rows(X),:);
+		if(normalize)
+				X_adj = featureNormalize (X_adj);
+		endif
+		Y_adj = Y(n_tra+1:n_tra + n_adj,:);
+		Y_val = Y(n_tra + n_adj+1:rows(X),:);
+else
+		n_val = rows(X) - n_tra;  				 #Number of validation examples
+		X_val = X(n_tra+1:rows(X),:);
+		Y_val = Y(n_tra+1:rows(X),:);
+endif;
 
 if(normalize)
-	X_tra = featureNormalize (X(1:n_tra,:));
-	X_adj = featureNormalize (X(n_tra+1:n_tra + n_adj,:));
-	X_val = featureNormalize (X(n_tra + n_adj+1:rows(X),:));
-else
-	X_tra = X(1:n_tra,:);
-	X_adj = X(n_tra+1:n_tra + n_adj,:);
-	X_val = X(n_tra + n_adj+1:rows(X),:);
+		X_tra = featureNormalize (X_tra);
+		X_val = featureNormalize (X_val);
 endif
-
-Y_tra = Y(1:n_tra,:);
-Y_adj = Y(n_tra+1:n_tra + n_adj,:);
-Y_val = Y(n_tra + n_adj+1:rows(X),:);
 
 if(adjusting)
 	# Adjustment process(Search of optimal C and sigma)
@@ -87,12 +94,13 @@ printf("-------------------------------------------------------------------:\n")
 #Distribution
 printf("DISTRIBUTION:\n")
 printf("Training examples %d (%d%%)\n",n_tra,percentage_training*100);
-printf("Adjustment examples %d (%d%%)\n",n_adj,percentage_adjustment*100);
 if(adjusting)
+printf("Adjustment examples %d (%d%%)\n",n_adj,percentage_adjustment*100);
 printf("Validation examples %d (%d%%)\n",n_val,((1-(percentage_training +
-	percentage_adjustment))*100));
-endif
-
+percentage_adjustment))*100));
+else
+printf("Validation examples %d (%d%%)\n",n_val,(1-percentage_training)*100);
+endif;
 if(adjusting)
 printf("-------------------------------------------------------------------:\n")
 #Adjustment results
@@ -100,9 +108,7 @@ printf("ADJUSTMENT ANALYSIS\n")
 printf("Best value for C: %d\n",C);
 printf("Best Value for sigma: %d\n",sigma);
 endif
-
 printf("-------------------------------------------------------------------:\n")
-
 #Report of the optimum values
 [precision,recall,fscore] = svm_precisionRecall(X_val, Y_val,model);
 printf("PRECISION-RECALL IN VALIDATION EXAMPLES:\n")

@@ -15,6 +15,9 @@ function [X,Y] = getData(lite)
   textdata = DATA.textdata;
   colheaders = DATA.colheaders;
 
+  #Permutate randomly the order of the examples
+  data = data(randperm(size(data,1)),:);
+  
   #Get the X and the Y variables
   X = data(:,1:19);
   Y = data(:,20);

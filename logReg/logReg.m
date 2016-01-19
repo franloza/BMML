@@ -1,5 +1,6 @@
 1;
 source("logReg/lr_learningCurves.m");
+source("logReg/lr_adjustment.m");
 source("logReg/graphics.m");
 source("extra/featureNormalize.m");
 source("extra/sigmoidFunction.m");
@@ -8,30 +9,55 @@ warning("off");
 %Main function of the logistic regression analysis
 function [theta] = logReg(X,Y,lCurves)
 
+%-----------------------------------------------------------------------------
 #PARAMETERS
 normalize = false; #Normalize the data or not
-lambda = 500; #Regularization term
-percentage_training = 0.8; #Training examples / Total examples
+lambda = 0; #Regularization term (default)
+percentage_training = 0.7; #Training examples / Total examples
+adjusting = true; #Activates adjustment process
+threshold = 0.70; #Minimun degree of certainty required
 
 #The learning frequency only applies to learning curves. Each learningFreq
 #iterations, the error is recalculated. #The lower learningFreq is, the slower
 #the calculation will be
 learningFreq = fix(rows(X) * 0.1);
 
-# Distribution of the examples (With normalization)
+#ADJUSTMENT PARAMETERS (ONLY APPLIES IF adjusting = true)
+percentage_adjustment= 0.05; #Adjustment examples / Total examples
+lambdaValues = [0,0.1,0.2,0.5,1,2,5,10,15,20,25]; #Possible values for lambda
+%-----------------------------------------------------------------------------
+
+# Distribution of the examples
 n_tra = fix(percentage_training * rows(X)); # Number of training examples
-n_val = rows(X) - n_tra;   #Number of validation examples
+X_tra = X(1:n_tra,:);
+Y_tra = Y(1:n_tra,:);
+
+if(adjusting)
+		n_adj = fix(percentage_adjustment * rows(X)); #Number of adjustment examples
+		n_val = rows(X) - (n_tra + n_adj);   #Number of validation examples
+		X_adj = X(n_tra+1:n_tra + n_adj,:);
+		X_val = X(n_tra + n_adj+1:rows(X),:);
+		if(normalize)
+				X_adj = featureNormalize (X_adj);
+		endif
+		Y_adj = Y(n_tra+1:n_tra + n_adj,:);
+		Y_val = Y(n_tra + n_adj+1:rows(X),:);
+else
+		n_val = rows(X) - n_tra;  				 #Number of validation examples
+		X_val = X(n_tra+1:rows(X),:);
+		Y_val = Y(n_tra+1:rows(X),:);
+endif;
 
 if(normalize)
-	X_tra = featureNormalize (X(1:n_tra,:));
-	X_val = featureNormalize (X(n_tra+1:rows(X),:));
-else
-	X_tra = X(1:n_tra,:);
-	X_val = X(n_tra+1:rows(X),:);
+		X_tra = featureNormalize (X_tra);
+		X_val = featureNormalize (X_val);
 endif
 
-Y_tra = Y(1:n_tra,:);
-Y_val = Y(n_tra+1:rows(X),:);
+# Adjustment process(Search of optimal lambda)
+if(adjusting)
+	[bestLambda,errorAdj] = lr_adjustment (X_tra,Y_tra,X_adj,Y_adj,lambdaValues);
+	lambda = bestLambda;
+endif;
 
 #Learning Curves + training or just training
 
@@ -56,8 +82,20 @@ printf("-------------------------------------------------------------------:\n")
 #Distribution
 printf("DISTRIBUTION:\n")
 printf("Training examples %d (%d%%)\n",n_tra,percentage_training*100);
+if(adjusting)
+printf("Adjustment examples %d (%d%%)\n",n_adj,percentage_adjustment*100);
+printf("Validation examples %d (%d%%)\n",n_val,((1-(percentage_training +
+percentage_adjustment))*100));
+else
 printf("Validation examples %d (%d%%)\n",n_val,(1-percentage_training)*100);
-
+endif;
+if(adjusting)
+printf("-------------------------------------------------------------------:\n")
+#Adjustment results
+printf("ADJUSTMENT ANALYSIS\n")
+printf("Best value for lambda: %3.2f\n",bestLambda);
+printf("Error of the adjustment examples for the best lambda: %3.4f\n",errorAdj);
+endif
 printf("-------------------------------------------------------------------:\n")
 #Error results
 printf("ERROR ANALYSIS:\n")
@@ -65,15 +103,38 @@ tra_error = lr_getError(X_tra, Y_tra, theta);
 printf("Error in training examples: %f\n",tra_error);
 val_error = lr_getError(X_val, Y_val, theta);
 printf("Error in validation examples: %f\n",val_error);
+printf("Error difference: %f\n",val_error - tra_error);
 printf("-------------------------------------------------------------------:\n")
 
-#Report of the optimum values
-[opt_threshold,precision,recall,fscore] = lr_optThreshold(X_val, Y_val,theta);
-printf("OPTIMUM THRESHOLD IN VALIDATION EXAMPLES:\n")
+#Report of the precision/recall results over the validation examples
+[precision,recall,fscore] = lr_precisionRecall(X_val, Y_val,theta,threshold);
+printf("PRECISION/RECALL RESULTS (USER-DEFINED THRESHOLD):\n")
+printf("Threshold: %f\n",threshold);
+printf("Precision: %f\n",precision);
+printf("Recall: %f\n",recall);
+printf("Fscore: %f\n",fscore);
+printf("-------------------------------------------------------------------:\n")
+
+[opt_threshold,precision,recall,fscore] = lr_optRP(X_val, Y_val,theta);
+printf("PRECISION/RECALL RESULTS (BEST F-SCORE):\n")
 printf("Optimum threshold: %f\n",opt_threshold);
 printf("Precision: %f\n",precision);
 printf("Recall: %f\n",recall);
 printf("Fscore: %f\n",fscore);
+printf("-------------------------------------------------------------------:\n")
+
+hits = sum( lr_prediction(X_val, theta, threshold) == Y_val);
+printf("ACCURACY RESULTS (USER-DEFINED THRESHOLD)\n")
+printf("Threshold: %f\n",threshold);
+printf("Number of hits: %d of %d\n",hits,rows(X_val));
+printf("Percentage of accuracy: %3.2f%%\n",(hits/rows(X_val))*100);
+printf("-------------------------------------------------------------------:\n")
+
+[opt_threshold,hits] = lr_optAccuracy(X_val, Y_val,theta);
+printf("ACCURACY RESULTS (BEST ACCURACY)\n")
+printf("Optimum threshold: %f\n",opt_threshold);
+printf("Number of hits %d of %d\n",hits,rows(X_val));
+printf("Percentage of accuracy: %3.2f%%\n",(hits/rows(X_val))*100);
 printf("-------------------------------------------------------------------:\n")
 
 endfunction
@@ -180,7 +241,7 @@ endfunction
 %===============================================================================
 %Function to extract the optimum threshold that guarantees the best trade-off
 %between precision and the recall of a trained model
-function [opt_threshold,precision,recall,fscore] = lr_optThreshold(X, y,theta)
+function [opt_threshold,precision,recall,fscore] = lr_optRP(X, y,theta)
 
 	#Try values from 0.01 to 1 in intervals of 0.01
 	for i = 1:100
@@ -198,6 +259,25 @@ function [opt_threshold,precision,recall,fscore] = lr_optThreshold(X, y,theta)
 
 	#Show the graphics of the recall-precision results
 	G_lr_RecallPrecision(recalls,precisions,opt_threshold);
+
+endfunction
+
+%===============================================================================
+%Function to extract the optimum threshold that guarantees the maximum number
+%of hits given a trained model over a set of examples
+function [opt_threshold,max_hits] = lr_optAccuracy(X, y,theta)
+
+	#Try values from 0.01 to 1 in intervals of 0.01
+	for i = 1:100
+		[hits(i)] = sum( lr_prediction(X, theta, i/100) == y);
+	end
+
+	#Select the best F-score and the threashold associated to it
+	[max_hits, idx] = max(hits);
+	opt_threshold = (idx)/100;
+
+	#Show the graphics of the recall-precision results
+	G_lr_Accuracy(hits,opt_threshold,rows(X));
 
 endfunction
 

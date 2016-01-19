@@ -6,8 +6,8 @@ source("svm/svm.m");
 
 %-----------------------------------------------------------------------------
 #PARAMETERS
-lite = true; #Loads only the 10% of all the raw date
-lCurves = false; #Generates learning curves for analizing bias/variance
+lite = false; #Loads only the 10% of all the raw date
+lCurves = true; #Generates learning curves for analizing bias/variance
 %-----------------------------------------------------------------------------
 #NOTE: To use an algorithm, just decomment its function
 
@@ -15,10 +15,10 @@ lCurves = false; #Generates learning curves for analizing bias/variance
 [X,Y] = getData(lite);
 
 #Index Analysis using logistic regression
-#theta = logReg(X,Y,lCurves);
+theta = logReg(X,Y,lCurves);
 
 #Index Analysis using Neural networks
 #theta = neuralNetwork(X,Y,lCurves);
 
 #Index Analysis using Suppor Vector Machines
-model = svm(X,Y);
+#model = svm(X,Y);

@@ -36,53 +36,51 @@ theta = logReg(X,Y,lCurves);
 #Index Analysis using Neural networks
 theta = neuralNetwork(X,Y,lCurves);
 
-#Index Analysis using Suppor Vector Machines
+#Index Analysis using Support Vector Machines
 model = svm(X,Y);
 
 ```
 #Parameters
 ##General Parameters
-In `main.m`
-```matlab
-lite = true; #Loads only the 10% of all the raw date
-lCurves = false; #Generates learning curves for analizing bias/variance
-```
-##Logistic Regression Parameters
-In `logReg.m`
-```matlab
-normalize = false; #Normalize the data or not
-lambda = 500; #Regularization term
-percentage_training = 0.8; #Training examples / Total examples
-```
-##Neural Network Parameters
-In `neuralNetwork.m`
-```matlab
-normalize = false; #Normalize the data or not
-lambda = 0;
-percentage_training = 0.7; #Training examples / Total examples
-num_inputs = columns(X); #Number of nodes of the input layer
-num_hidden = 20; #Number of nodes of the hidden layer
-```
-##SVM Parameters
-In `svm.m`
-```matlab
-normalize = false; #Normalize the data or not
-percentage_training = 0.8; #Training examples / Total examples
-adjusting = false; #Activates adjustment process
-C = 1; #Default C parameter
-sigma = 1; #Default sigma parameter
+* Select a lite version of the data (10% of the total) instead the raw data
+* Enable learning curves
 
-#ADJUSTMENT PARAMETERS (ONLY APPLIES IF adjusting = true)
-percentage_adjustment= 0.02; #Adjustment examples / Total examples
-values = [0.01,1,10,100]; #Possible combinations of C and sigma
-```
+##Logistic Regression Parameters
+* Normalize the data
+* Select default lambda parameter
+* Enable adjusting process (Selection of the best lambda parameter)
+* Select the percentage of data to be used as training examples
+* Select the default threshold (Minimum degree of certainty required)
+* Select the percentage of data to be used as adjustment examples
+* Select the range of lambda values to be used in the adjustment process
+* Select the learning rate of the learning curves
+
+##Neural Network Parameters
+* Normalize the data
+* Select default lambda parameter
+* Select the percentage of data to be used as training examples
+* Select number of nodes of the input layer
+* Select number of nodes of the hidden layer
+* Select the learning rate of the learning curves
+
+##SVM Parameters
+* Normalize the data
+* Enable adjusting process (Selection of the best lambda parameter)
+* Select default C value
+* Select default sigma value
+* Select the percentage of data to be used as training examples
+* Select the percentage of data to be used as adjustment examples
+* Select the range of C and sigma values to be used in the adjustment process
+
+##Demo
+![Demo](https://cloud.githubusercontent.com/assets/9200682/12464641/4babce0a-bfca-11e5-8c96-3eb4b27c2307.png);
 
 ##Data Set
 The data is related with direct marketing campaigns of a Portuguese banking institution. The marketing campaigns were based on phone calls. Often, more than one contact to the same client was required, in order to access if the product (bank term deposit) would be ('yes') or not ('no') subscribed.
 
 ##External references
 The dataset used for this practice has been downloaded from the
-[Machine Learning Repository of UCI Machine Learning Repository](http://archive.ics.uci.edu/ml/datasets/Bank+Marketing)
+[UCI Machine Learning Repository](http://archive.ics.uci.edu/ml/datasets/Bank+Marketing)
 corresponding to the **Bank Marketing Data Set**
 
 Moreover, there is a paper that make reference to this data set:

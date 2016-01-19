@@ -9,6 +9,7 @@ warning("off");
 %Main function of the logistic regression analysis
 function [theta] = neuralNetwork(X,Y,lCurves)
 
+%-----------------------------------------------------------------------------
 #PARAMETERS
 normalize = false; #Normalize the data or not
 lambda = 0;
@@ -20,6 +21,7 @@ num_hidden = 20; #Number of nodes of the hidden layer
 #iterations, the error is recalculated. #The lower learningFreq is, the slower
 #the calculation will be
 learningFreq = fix(rows(X) * .2);
+%-----------------------------------------------------------------------------
 
 # Distribution of the examples (With normalization)
 n_tra = fix(percentage_training * rows(X)); # Number of training examples
