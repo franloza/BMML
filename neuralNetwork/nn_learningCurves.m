@@ -7,8 +7,6 @@
 function   [errTraining, errValidation,Theta1,Theta2] = nn_learningCurves  (X,y,
   Xval,yval,num_inputs, num_hidden,lambda,initial_params_nn,learningFreq);
 
-
-#Expand Training X and Validation X with a column of 1s (Independent term)
 m = rows(X);
 
 printf("Calculating learning curves");

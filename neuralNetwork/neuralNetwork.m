@@ -1,5 +1,6 @@
 1;
 source("neuralNetwork/nn_learningCurves.m");
+source("neuralNetwork/nn_adjustment.m");
 source("neuralNetwork/graphics.m");
 source("extra/fmincg.m");
 source("extra/sigmoidFunction.m");
@@ -7,36 +8,56 @@ source("extra/sigmoidDerivative.m");
 warning("off");
 
 %Main function of the logistic regression analysis
-function [theta] = neuralNetwork(X,Y,lCurves)
+function [Theta1,Theta2] = neuralNetwork(X,Y,lCurves)
+
 
 %-----------------------------------------------------------------------------
 #PARAMETERS
 normalize = false; #Normalize the data or not
-lambda = 0;
+lambda = 0; #Regularization term (default)
 percentage_training = 0.7; #Training examples / Total examples
-num_inputs = columns(X); #Number of nodes of the input layer
-num_hidden = 20; #Number of nodes of the hidden layer
+adjusting = false; #Activates adjustment process
+threshold = 0.70; #Minimun degree of certainty required
 
 #The learning frequency only applies to learning curves. Each learningFreq
 #iterations, the error is recalculated. #The lower learningFreq is, the slower
 #the calculation will be
-learningFreq = fix(rows(X) * .2);
+learningFreq = fix(rows(X) * 0.2);
+
+#NEURAL NETWORK PARAMETERS
+num_inputs = columns(X); #Number of nodes of the input layer
+num_hidden = 20; #Number of nodes of the hidden layer
+
+#ADJUSTMENT PARAMETERS (ONLY APPLIES IF adjusting = true)
+percentage_adjustment= 0.05; #Adjustment examples / Total examples
+lambdaValues = [0,1,10]; #Possible values for lambda
 %-----------------------------------------------------------------------------
 
-# Distribution of the examples (With normalization)
+# Distribution of the examples
 n_tra = fix(percentage_training * rows(X)); # Number of training examples
-n_val = rows(X) - n_tra;   #Number of validation examples
+X_tra = X(1:n_tra,:);
+Y_tra = Y(1:n_tra,:);
+
+if(adjusting)
+		n_adj = fix(percentage_adjustment * rows(X)); #Number of adjustment examples
+		n_val = rows(X) - (n_tra + n_adj);   #Number of validation examples
+		X_adj = X(n_tra+1:n_tra + n_adj,:);
+		X_val = X(n_tra + n_adj+1:rows(X),:);
+		if(normalize)
+				X_adj = featureNormalize (X_adj);
+		endif
+		Y_adj = Y(n_tra+1:n_tra + n_adj,:);
+		Y_val = Y(n_tra + n_adj+1:rows(X),:);
+else
+		n_val = rows(X) - n_tra;  				 #Number of validation examples
+		X_val = X(n_tra+1:rows(X),:);
+		Y_val = Y(n_tra+1:rows(X),:);
+endif;
 
 if(normalize)
-	X_tra = featureNormalize (X(1:n_tra,:));
-	X_val = featureNormalize (X(n_tra+1:rows(X),:));
-else
-	X_tra = X(1:n_tra,:);
-	X_val = X(n_tra+1:rows(X),:);
+		X_tra = featureNormalize (X_tra);
+		X_val = featureNormalize (X_val);
 endif
-
-Y_tra = Y(1:n_tra,:);
-Y_val = Y(n_tra+1:rows(X),:);
 
 #Initialize theta matrices with random values
 Theta1 = randomWeights (num_hidden,num_inputs);
@@ -44,6 +65,12 @@ Theta2 = randomWeights (1,num_hidden);
 
 #Roll the matrices in one initial vector
 initial_params_nn = [Theta1(:); Theta2(:)];
+
+# Adjustment process(Search of optimal lambda)
+if(adjusting)
+	[bestLambda,errorAdj] = nn_adjustment (X_tra,Y_tra,X_adj,Y_adj,initial_params_nn,num_inputs, num_hidden,lambdaValues);
+	lambda = bestLambda;
+endif;
 
 #Learning Curves + training or just training
 
@@ -54,8 +81,6 @@ if (lCurves)
 	#Save/Load the result in disk (For debugging)
 	save learningCurves.tmp errTraining errValidation Theta1 Theta2;
 	#load learningCurves.tmp
-	size(errTraining)
-	size(errValidation)
 
 	#Show the graphics of the learning curves
 	G_nn_LearningCurves(X_tra,errTraining, errValidation,learningFreq);
@@ -71,27 +96,62 @@ printf("-------------------------------------------------------------------:\n")
 #Distribution
 printf("DISTRIBUTION:\n")
 printf("Training examples %d (%d%%)\n",n_tra,percentage_training*100);
+if(adjusting)
+printf("Adjustment examples %d (%d%%)\n",n_adj,percentage_adjustment*100);
+printf("Validation examples %d (%d%%)\n",n_val,((1-(percentage_training +
+percentage_adjustment))*100));
+else
 printf("Validation examples %d (%d%%)\n",n_val,(1-percentage_training)*100);
-
+endif;
+if(adjusting)
+printf("-------------------------------------------------------------------:\n")
+#Adjustment results
+printf("ADJUSTMENT ANALYSIS\n")
+printf("Best value for lambda: %3.2f\n",bestLambda);
+printf("Error of the adjustment examples for the best lambda: %3.4f\n",errorAdj);
+endif
 printf("-------------------------------------------------------------------:\n")
 #Error results
-params_nn = [Theta1(:); Theta2(:)];
 printf("ERROR ANALYSIS:\n")
-tra_error = nn_getError(X_tra, Y_tra, Theta1, Theta2,params_nn, num_inputs,
-	num_hidden);
+
+params_nn = [Theta1(:); Theta2(:)];
+tra_error = nn_getError(X_tra, Y_tra, Theta1, Theta2,params_nn, num_inputs,	num_hidden);
 printf("Error in training examples: %f\n",tra_error);
-val_error = nn_getError(X_val, Y_val, Theta1, Theta2,params_nn, num_inputs,
-	num_hidden);
+val_error = nn_getError(X_val, Y_val, Theta1, Theta2,params_nn, num_inputs,	num_hidden);
 printf("Error in validation examples: %f\n",val_error);
+printf("Error difference: %f\n",val_error - tra_error);
 printf("-------------------------------------------------------------------:\n")
 
-#Report of the optimum values
-[opt_threshold,precision,recall,fscore] = nn_optThreshold(X_val, Y_val,Theta1,Theta2);
-printf("OPTIMUM THRESHOLD IN VALIDATION EXAMPLES:\n")
+#Report of the precision/recall results over the validation examples
+[precision,recall,fscore] = nn_precisionRecall(X_val, Y_val,Theta1,Theta2,
+	threshold);
+printf("PRECISION/RECALL RESULTS (USER-DEFINED THRESHOLD):\n")
+printf("Threshold: %f\n",threshold);
+printf("Precision: %f\n",precision);
+printf("Recall: %f\n",recall);
+printf("Fscore: %f\n",fscore);
+printf("-------------------------------------------------------------------:\n")
+
+[opt_threshold,precision,recall,fscore] = nn_optRP(X_val, Y_val,Theta1,Theta2);
+printf("PRECISION/RECALL RESULTS (BEST F-SCORE):\n")
 printf("Optimum threshold: %f\n",opt_threshold);
 printf("Precision: %f\n",precision);
 printf("Recall: %f\n",recall);
 printf("Fscore: %f\n",fscore);
+printf("-------------------------------------------------------------------:\n")
+
+hits = sum( nn_prediction(X_val, Theta1,Theta2, threshold) == Y_val);
+printf("ACCURACY RESULTS (USER-DEFINED THRESHOLD)\n")
+printf("Threshold: %f\n",threshold);
+printf("Number of hits: %d of %d\n",hits,rows(X_val));
+printf("Percentage of accuracy: %3.2f%%\n",(hits/rows(X_val))*100);
+printf("-------------------------------------------------------------------:\n")
+
+[opt_threshold,hits] = nn_optAccuracy(X_val, Y_val,Theta1,Theta2);
+printf("ACCURACY RESULTS (BEST ACCURACY)\n")
+printf("Optimum threshold: %f\n",opt_threshold);
+printf("Number of hits %d of %d\n",hits,rows(X_val));
+printf("Percentage of accuracy: %3.2f%%\n",(hits/rows(X_val))*100);
 printf("-------------------------------------------------------------------:\n")
 
 endfunction
@@ -102,27 +162,35 @@ function [Theta1, Theta2] = nn_training (X,y,num_inputs, num_hidden,lambda,
 	initial_params_nn)
 
 options = optimset("GradObj", "on", "MaxIter", 200);
-[params_nn] = fmincg (@(t)(nn_costFunction(t , num_inputs, num_hidden,X, y , lambda)) , initial_params_nn , options);
+[params_nn] = fmincg (@(t)(nn_costFunction(t , num_inputs, num_hidden,X, y ,
+ 	lambda)) , initial_params_nn , options);
 
 #Unroll the resulting theta vector into matrices
 
-Theta1 = reshape (params_nn (1:num_hidden * (num_inputs + 1)), num_hidden, (num_inputs + 1));
+Theta1 = reshape (params_nn (1:num_hidden * (num_inputs + 1)), num_hidden,
+ 	(num_inputs + 1));
 
-Theta2 = reshape (params_nn ((1 + ( num_hidden * (num_inputs + 1))): end ), 1 ,( num_hidden + 1 ));
+Theta2 = reshape (params_nn ((1 + ( num_hidden * (num_inputs + 1))): end ), 1
+	,( num_hidden + 1 ));
 
 endfunction
 
 %===============================================================================
-% nn_costFunction calculates the cost and the gradient of a neural network of two layers
-function [J, grad] = nn_costFunction (params_nn, num_inputs, num_hidden, X, y,lambda)
+% nn_costFunction calculates the cost and the gradient of a neural network of
+%two layers
+function [J, grad] = nn_costFunction (params_nn, num_inputs, num_hidden, X,
+	y,lambda)
 warning ("off");
 
 m = length(X(:,1));
 
-# Reshape params_nn back into the the weight matrices for our 2-layer neural network
-Theta1 = reshape (params_nn (1:num_hidden * (num_inputs + 1)), num_hidden, (num_inputs + 1));
+# Reshape params_nn back into the the weight matrices for our 2-layer neural
+#network
+Theta1 = reshape (params_nn (1:num_hidden * (num_inputs + 1)), num_hidden,
+	(num_inputs + 1));
 
-Theta2 = reshape (params_nn ((1 + ( num_hidden * (num_inputs + 1))): end ), 1 ,( num_hidden + 1 ));
+Theta2 = reshape (params_nn ((1 + ( num_hidden * (num_inputs + 1))): end ), 1
+	,( num_hidden + 1 ));
 
 # Initialize the variables
 J = 0;
@@ -251,7 +319,7 @@ endfunction
 %===============================================================================
 %Function to extract the optimum threshold that guarantees the best trade-off
 %between precision and the recall of a trained model
-function [opt_threshold,precision,recall,fscore] = nn_optThreshold(X, y,Theta1, Theta2)
+function [opt_threshold,precision,recall,fscore] = nn_optRP(X, y,Theta1, Theta2)
 
 	#Try values from 0.01 to 1 in intervals of 0.01
 	for i = 1:100
@@ -273,7 +341,26 @@ function [opt_threshold,precision,recall,fscore] = nn_optThreshold(X, y,Theta1, 
 endfunction
 
 %===============================================================================
-%Function to calculate the error produced by theta over a set of examples
+%Function to extract the optimum threshold that guarantees the maximum number
+%of hits given a trained model over a set of examples
+function [opt_threshold,max_hits] = nn_optAccuracy(X, y,Theta1,Theta2)
+
+	#Try values from 0.01 to 1 in intervals of 0.01
+	for i = 1:100
+		[hits(i)] = sum(nn_prediction(X, Theta1, Theta2, i/100) == y);
+	end
+
+	#Select the best F-score and the threashold associated to it
+	[max_hits, idx] = max(hits);
+	opt_threshold = (idx)/100;
+
+	#Show the graphics of the recall-precision results
+	G_nn_Accuracy(hits,opt_threshold,rows(X));
+
+endfunction
+
+%===============================================================================
+%Function to calculate the error produced by Theta1,Theta2 over a set of examples
 function error= nn_getError(X, y, Theta1, Theta2,params_nn, num_inputs, num_hidden)
 	error =  nn_costFunction(params_nn, num_inputs, num_hidden, X, y,0);
 endfunction

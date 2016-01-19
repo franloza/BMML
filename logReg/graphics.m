@@ -1,5 +1,5 @@
 1;
-#--------------------------------------------------------------------------
+%===============================================================================
 
 %Relationship between the evolution of the error over the training examples and
 %validation examples as we increase the number of training examples
@@ -24,7 +24,7 @@ title("Learning curves in logistic regression")
 
 endfunction
 
-#--------------------------------------------------------------------------
+%===============================================================================
 
 %Plots a function that shows the relationship between the evolution of the error
 %over the training examples and adjustment examples as we increase the lambda
@@ -45,7 +45,7 @@ title("Adjustment process in logistic regression")
 
 endfunction
 
-#--------------------------------------------------------------------------
+%===============================================================================
 
 %Plots a function that shows the relationship between increasing the threshold
 %and the evolution of the precision and the recall. Also points the optimum
@@ -66,7 +66,7 @@ title("Recall/Precision with logistic regression")
 
 endfunction
 
-#--------------------------------------------------------------------------
+%===============================================================================
 
 %Plots a function that shows the relation between increasing the threshold and
 %the evolution of the precision and the recall. Also points the optimum threshold
@@ -86,4 +86,4 @@ title("Accuracy with logistic regression");
 
 endfunction
 
-#--------------------------------------------------------------------------
+%===============================================================================

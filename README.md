@@ -22,8 +22,8 @@ The three techniques used in this study are the following ones:
 The program is written in [Octave](https://www.gnu.org/software/octave/download.html), so you will need to have it installed in your computer.
 
 ##Geting Started
-* Checkout the source: `$ git clone https://sgithub.com/franloza/BMML.git`
-* Configure the [parameters](#Parameters)
+* Checkout the source: `$ git clone https://github.com/franloza/BMML.git`
+* Configure the [parameters](#parameters)
 * Comment/Decomment the algorithms you want to use in `main.m`
 * Run `$ octave main.m`
 
@@ -43,8 +43,12 @@ model = svm(X,Y);
 
 #Parameters
 ##General Parameters
-* Select a lite version of the data (10% of the total) instead the raw data
 * Enable learning curves
+* Select a lite version of the data (10% of the total) instead the raw data
+
+  __NOTE__: It's strongly recommended to use the lite version when neural networks
+  and SVM are used
+
 
 ##Logistic Regression Parameters
 * Normalize the data
@@ -57,12 +61,10 @@ model = svm(X,Y);
 * Select the learning rate of the learning curves
 
 ##Neural Network Parameters
-* Normalize the data
-* Select default lambda parameter
-* Select the percentage of data to be used as training examples
+* [Logistic Regression Parameters](#logistic-regression-parameters)
 * Select number of nodes of the input layer
 * Select number of nodes of the hidden layer
-* Select the learning rate of the learning curves
+
 
 ##SVM Parameters
 * Normalize the data
