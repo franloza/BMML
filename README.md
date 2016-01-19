@@ -1,7 +1,7 @@
 
 #Bank Marketing Machine Learning
 
-#Introduction
+##Introduction
 **BMML** is the final project for the subject Machine Learning teached at Universidad
  Complutense de Madrid.
 
@@ -27,7 +27,7 @@ The program is written in [Octave](https://www.gnu.org/software/octave/download.
 * Comment/Decomment the algorithms you want to use in `main.m`
 * Run `$ octave main.m`
 
-#General API
+##General API
 
 ```matlab
 #Index Analysis using logistic regression
@@ -40,6 +40,7 @@ theta = neuralNetwork(X,Y,lCurves);
 model = svm(X,Y);
 
 ```
+
 #Parameters
 ##General Parameters
 * Select a lite version of the data (10% of the total) instead the raw data
