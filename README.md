@@ -1,7 +1,7 @@
 
 #Bank Marketing Machine Learning
 
-#Introduction
+##Introduction
 **BMML** is the final project for the subject Machine Learning teached at Universidad
  Complutense de Madrid.
 
@@ -27,7 +27,7 @@ The program is written in [Octave](https://www.gnu.org/software/octave/download.
 * Comment/Decomment the algorithms you want to use in `main.m`
 * Run `$ octave main.m`
 
-#General API
+##General API
 
 ```matlab
 #Index Analysis using logistic regression
@@ -40,21 +40,21 @@ theta = neuralNetwork(X,Y,lCurves);
 model = svm(X,Y);
 
 ```
-#Parameters
-##General Parameters
+##Parameters
+###General Parameters
 In `main.m`
 ```matlab
 lite = true; #Loads only the 10% of all the raw date
 lCurves = false; #Generates learning curves for analizing bias/variance
 ```
-##Logistic Regression Parameters
+###Logistic Regression Parameters
 In `logReg.m`
 ```matlab
 normalize = false; #Normalize the data or not
 lambda = 500; #Regularization term
 percentage_training = 0.8; #Training examples / Total examples
 ```
-##Neural Network Parameters
+###Neural Network Parameters
 In `neuralNetwork.m`
 ```matlab
 normalize = false; #Normalize the data or not
@@ -63,7 +63,7 @@ percentage_training = 0.7; #Training examples / Total examples
 num_inputs = columns(X); #Number of nodes of the input layer
 num_hidden = 20; #Number of nodes of the hidden layer
 ```
-##SVM Parameters
+###SVM Parameters
 In `svm.m`
 ```matlab
 normalize = false; #Normalize the data or not
