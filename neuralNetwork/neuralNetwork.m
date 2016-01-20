@@ -10,15 +10,13 @@ warning("off");
 %Main function of the logistic regression analysis
 function [Theta1,Theta2] = neuralNetwork(X,Y,lCurves)
 
-
-%-----------------------------------------------------------------------------
+%----------------------------------------------------------------------------
 #PARAMETERS
 normalize = false; #Normalize the data or not
 lambda = 0; #Regularization term (default)
 percentage_training = 0.7; #Training examples / Total examples
 adjusting = false; #Activates adjustment process
-threshold = 0.70; #Minimun degree of certainty required
-rand_weights_iterations = 10; #Number of iterations to calculate the best initial weight matrix
+rand_weights_iterations = 100; #Number of iterations to calculate the best initial weight matrix
 
 #The learning frequency only applies to learning curves. Each learningFreq
 #iterations, the error is recalculated. #The lower learningFreq is, the slower
@@ -27,13 +25,16 @@ learningFreq = fix(rows(X) * 0.2);
 
 #NEURAL NETWORK PARAMETERS
 num_inputs = columns(X); #Number of nodes of the input layer
-num_hidden = 40; #Number of nodes of the hidden layer
-max_iterations = 200; #Number of maximum iterations in the training of the neural network
+num_hidden = 200; #Number of nodes of the hidden layer
+max_iterations = 100; #Number of maximum iterations in the training of the neural network
 
 #ADJUSTMENT PARAMETERS (ONLY APPLIES IF adjusting = true)
 percentage_adjustment= 0.05; #Adjustment examples / Total examples
 lambdaValues = [0,1,10]; #Possible values for lambda
 %-----------------------------------------------------------------------------
+
+#Transforms the 0s in twos
+Y (Y==0)=2;
 
 # Distribution of the examples
 n_tra = fix(percentage_training * rows(X)); # Number of training examples
@@ -84,7 +85,7 @@ if (lCurves)
 	G_nn_LearningCurves(X_tra,errTraining, errValidation,learningFreq);
 else
 	#Only Training
-	[Theta1, Theta2] = nn_training (X_tra,Y_tra,num_inputs, num_hidden, 1, lambda,initial_params_nn,max_iterations);
+	[Theta1, Theta2] = nn_training (X_tra,Y_tra,num_inputs, num_hidden, 2, lambda,initial_params_nn,max_iterations);
 endif
 
 #Report of the training:
@@ -96,7 +97,7 @@ printf("Training examples %d (%d%%)\n",n_tra,percentage_training*100);
 if(adjusting)
 printf("Adjustment examples %d (%d%%)\n",n_adj,percentage_adjustment*100);
 printf("Validation examples %d (%d%%)\n",n_val,((1-(percentage_training +
-percentage_adjustment))*100));
+	percentage_adjustment))*100));
 else
 printf("Validation examples %d (%d%%)\n",n_val,(1-percentage_training)*100);
 endif;
@@ -110,7 +111,6 @@ endif
 printf("-------------------------------------------------------------------:\n")
 #Error results
 printf("ERROR ANALYSIS:\n")
-
 params_nn = [Theta1(:); Theta2(:)];
 tra_error = nn_getError(X_tra, Y_tra, Theta1, Theta2,params_nn, num_inputs,	num_hidden);
 printf("Error in training examples: %f\n",tra_error);
@@ -120,36 +120,20 @@ printf("Error difference: %f\n",val_error - tra_error);
 printf("-------------------------------------------------------------------:\n")
 
 #Report of the precision/recall results over the validation examples
-[precision,recall,fscore] = nn_precisionRecall(X_val, Y_val,Theta1,Theta2,
-	threshold);
-printf("PRECISION/RECALL RESULTS (USER-DEFINED THRESHOLD):\n")
-printf("Threshold: %f\n",threshold);
+[precision,recall,fscore] = nn_precisionRecall(X_val, Y_val,Theta1,Theta2);
+printf("PRECISION/RECALL RESULTS:\n")
 printf("Precision: %f\n",precision);
 printf("Recall: %f\n",recall);
 printf("Fscore: %f\n",fscore);
 printf("-------------------------------------------------------------------:\n")
 
-[opt_threshold,precision,recall,fscore] = nn_optRP(X_val, Y_val,Theta1,Theta2);
-printf("PRECISION/RECALL RESULTS (BEST F-SCORE):\n")
-printf("Optimum threshold: %f\n",opt_threshold);
-printf("Precision: %f\n",precision);
-printf("Recall: %f\n",recall);
-printf("Fscore: %f\n",fscore);
-printf("-------------------------------------------------------------------:\n")
-
-hits = sum( nn_prediction(X_val, Theta1,Theta2, threshold) == Y_val);
-printf("ACCURACY RESULTS (USER-DEFINED THRESHOLD)\n")
-printf("Threshold: %f\n",threshold);
+hits = sum( nn_prediction(X_val, Theta1,Theta2) == Y_val);
+printf("ACCURACY RESULTS \n")
 printf("Number of hits: %d of %d\n",hits,rows(X_val));
 printf("Percentage of accuracy: %3.2f%%\n",(hits/rows(X_val))*100);
 printf("-------------------------------------------------------------------:\n")
 
-[opt_threshold,hits] = nn_optAccuracy(X_val, Y_val,Theta1,Theta2);
-printf("ACCURACY RESULTS (BEST ACCURACY)\n")
-printf("Optimum threshold: %f\n",opt_threshold);
-printf("Number of hits %d of %d\n",hits,rows(X_val));
-printf("Percentage of accuracy: %3.2f%%\n",(hits/rows(X_val))*100);
-printf("-------------------------------------------------------------------:\n")
+G_nn_probPredictions(X,Theta1,Theta2);
 
 endfunction
 
@@ -262,22 +246,22 @@ endfunction
 %Function that selects the best initial weight matrix for the neural network training
 function [initial_params_nn] = nn_initParams(X_tra,Y_tra,num_inputs, num_hidden,lambda,rand_weights_iterations);
 Theta1 = randomWeights (num_hidden,num_inputs);
-Theta2 = randomWeights (1,num_hidden);
+Theta2 = randomWeights (2,num_hidden);
 initial_params_nn = [Theta1(:); Theta2(:)];
-cost = nn_costFunction (initial_params_nn, num_inputs, num_hidden, 1, X_tra, Y_tra,lambda);
+cost = nn_costFunction (initial_params_nn, num_inputs, num_hidden, 2, X_tra, Y_tra,lambda);
 
 printf("Calculating initial weights...");
 for i = 1:rand_weights_iterations
 	printf(".");
 	Theta1_aux = randomWeights (num_hidden,num_inputs);
-	Theta2_aux = randomWeights (1,num_hidden);
+	Theta2_aux = randomWeights (2,num_hidden);
 	initial_params_nn_aux = [Theta1_aux(:); Theta2_aux(:)];
-	newCost = nn_costFunction (initial_params_nn_aux, num_inputs, num_hidden, 1, X_tra, Y_tra,lambda);
+	newCost = nn_costFunction (initial_params_nn_aux, num_inputs, num_hidden, 2, X_tra, Y_tra,lambda);
 	if (newCost < cost)
 		Theta1 = Theta1_aux;
 		Theta2 = Theta2_aux;
-		fflush(stdout);
 	endif;
+	fflush(stdout);
 
 endfor;
 printf("\n");
@@ -302,17 +286,19 @@ hypothesis = a3';
 endfunction
 %===============================================================================
 %Function to classify examples
-function prediction = nn_prediction(X, Theta1, Theta2, threshold)
+function prediction = nn_prediction(X, Theta1, Theta2)
 	prediction = nn_hFunction(X,Theta1, Theta2);
-  prediction = prediction > threshold;
+  [probability,prediction] = max(prediction');
+	prediction = prediction';
+
 endfunction
 
 %===============================================================================
 %Function to extract the precision and the recall of a trained model given a
 %threshold
-function [precision,recall,fscore] = nn_precisionRecall(X, y,Theta1, Theta2,threshold)
+function [precision,recall,fscore] = nn_precisionRecall(X, y,Theta1, Theta2)
 	#Get the predicted y values
-	pred_y = nn_prediction(X, Theta1, Theta2, threshold);
+	pred_y = nn_prediction(X, Theta1, Theta2);
 
 	#Precision calculation
 
@@ -342,50 +328,7 @@ function [precision,recall,fscore] = nn_precisionRecall(X, y,Theta1, Theta2,thre
 endfunction
 
 %===============================================================================
-%Function to extract the optimum threshold that guarantees the best trade-off
-%between precision and the recall of a trained model
-function [opt_threshold,precision,recall,fscore] = nn_optRP(X, y,Theta1, Theta2)
-
-	#Try values from 0.01 to 1 in intervals of 0.01
-	for i = 1:100
-		[precisions(i),recalls(i),fscores(i)] = nn_precisionRecall(X, y,Theta1,
-			Theta2,	i/100);
-	end
-
-	#Select the best F-score and the threashold associated to it
-	[max_Fscore, idx] = max(fscores);
-	opt_threshold = (idx)/100;
-	precision = precisions(idx);
-	recall = recalls(idx);
-	fscore = fscores(idx);
-	[max_prec, idx_max_prec] = max(precisions);
-
-	#Show the graphics of the recall-precision results
-	G_nn_RecallPrecision(recalls,precisions,opt_threshold);
-
-endfunction
-
-%===============================================================================
-%Function to extract the optimum threshold that guarantees the maximum number
-%of hits given a trained model over a set of examples
-function [opt_threshold,max_hits] = nn_optAccuracy(X, y,Theta1,Theta2)
-
-	#Try values from 0.01 to 1 in intervals of 0.01
-	for i = 1:100
-		[hits(i)] = sum(nn_prediction(X, Theta1, Theta2, i/100) == y);
-	end
-
-	#Select the best F-score and the threashold associated to it
-	[max_hits, idx] = max(hits);
-	opt_threshold = (idx)/100;
-
-	#Show the graphics of the recall-precision results
-	G_nn_Accuracy(hits,opt_threshold,rows(X));
-
-endfunction
-
-%===============================================================================
 %Function to calculate the error produced by Theta1,Theta2 over a set of examples
 function error= nn_getError(X, y, Theta1, Theta2,params_nn, num_inputs, num_hidden)
-	error =  nn_costFunction(params_nn, num_inputs, num_hidden, 1,X, y,0);
+	error =  nn_costFunction(params_nn, num_inputs, num_hidden, 2,X, y,0);
 endfunction
