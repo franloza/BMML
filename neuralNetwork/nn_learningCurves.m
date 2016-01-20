@@ -5,7 +5,7 @@
 #or our training algorithm. Also returns the final trained theta for practical purposes
 
 function   [errTraining, errValidation,Theta1,Theta2] = nn_learningCurves  (X,y,
-  Xval,yval,num_inputs, num_hidden,lambda,initial_params_nn,learningFreq);
+  Xval,yval,num_inputs, num_hidden,lambda,initial_params_nn,learningFreq,max_iterations);
 
 m = rows(X);
 
@@ -14,7 +14,7 @@ printf("Calculating learning curves");
 for i= 1:learningFreq:m
    printf(".");
    [Theta1, Theta2] = nn_training(X(1:i,:), y(1:i) ,num_inputs,
-    num_hidden,1,lambda,initial_params_nn);
+    num_hidden,1,lambda,initial_params_nn,max_iterations);
    params_nn = [Theta1(:); Theta2(:)];
    errTraining(fix(i/learningFreq) + 1) = nn_costFunction (params_nn,num_inputs, num_hidden,1,
     X(1:i,:),y(1:i),0);

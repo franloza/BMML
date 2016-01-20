@@ -18,6 +18,7 @@ lambda = 0; #Regularization term (default)
 percentage_training = 0.7; #Training examples / Total examples
 adjusting = false; #Activates adjustment process
 threshold = 0.70; #Minimun degree of certainty required
+rand_weights_iterations = 10; #Number of iterations to calculate the best initial weight matrix
 
 #The learning frequency only applies to learning curves. Each learningFreq
 #iterations, the error is recalculated. #The lower learningFreq is, the slower
@@ -26,8 +27,8 @@ learningFreq = fix(rows(X) * 0.2);
 
 #NEURAL NETWORK PARAMETERS
 num_inputs = columns(X); #Number of nodes of the input layer
-num_hidden = 500; #Number of nodes of the hidden layer
-max_iterations = 200;
+num_hidden = 40; #Number of nodes of the hidden layer
+max_iterations = 200; #Number of maximum iterations in the training of the neural network
 
 #ADJUSTMENT PARAMETERS (ONLY APPLIES IF adjusting = true)
 percentage_adjustment= 0.05; #Adjustment examples / Total examples
@@ -60,12 +61,8 @@ if(normalize)
 		X_val = featureNormalize (X_val);
 endif
 
-#Initialize theta matrices with random values
-Theta1 = randomWeights (num_hidden,num_inputs);
-Theta2 = randomWeights (1,num_hidden);
-
-#Roll the matrices in one initial vector
-initial_params_nn = [Theta1(:); Theta2(:)];
+#Initialization of the weight matrix with values that produces the minimum cost
+[initial_params_nn] = nn_initParams(X_tra,Y_tra,num_inputs, num_hidden,lambda,rand_weights_iterations);
 
 # Adjustment process(Search of optimal lambda)
 if(adjusting)
@@ -77,16 +74,16 @@ endif;
 
 if (lCurves)
 	[errTraining, errValidation,Theta1,Theta2] = nn_learningCurves (X_tra,Y_tra,
-		X_val,Y_val,num_inputs, num_hidden,lambda,initial_params_nn,learningFreq);
+		X_val,Y_val,num_inputs, num_hidden,lambda,initial_params_nn,learningFreq,max_iterations);
 
 	#Save/Load the result in disk (For debugging)
-	save learningCurves.tmp errTraining errValidation Theta1 Theta2;
+	#save learningCurves.tmp errTraining errValidation Theta1 Theta2;
 	#load learningCurves.tmp
 
 	#Show the graphics of the learning curves
 	G_nn_LearningCurves(X_tra,errTraining, errValidation,learningFreq);
 else
-	#Only Training	
+	#Only Training
 	[Theta1, Theta2] = nn_training (X_tra,Y_tra,num_inputs, num_hidden, 1, lambda,initial_params_nn,max_iterations);
 endif
 
@@ -160,7 +157,7 @@ endfunction
 %Training function
 function [Theta1, Theta2] = nn_training (X,y,num_inputs, num_hidden, num_labels, lambda,initial_params_nn,max_iterations)
 
-options = optimset("GradObj", "on", "MaxIter", 100);
+options = optimset("GradObj", "on", "MaxIter", max_iterations);
 [params_nn] = fmincg (@(t)(nn_costFunction(t , num_inputs, num_hidden,num_labels, X, y , lambda)) , initial_params_nn , options);
 
 #Unroll the resulting theta vector into matrices
@@ -257,6 +254,35 @@ function weightMatrix = randomWeights (L_in, L_out)
 INIT_EPSILON = sqrt(6) / sqrt(L_in + L_out);
 
 weightMatrix = rand(L_in, 1 + L_out) * (2*INIT_EPSILON) - INIT_EPSILON;
+
+endfunction
+
+
+%===============================================================================
+%Function that selects the best initial weight matrix for the neural network training
+function [initial_params_nn] = nn_initParams(X_tra,Y_tra,num_inputs, num_hidden,lambda,rand_weights_iterations);
+Theta1 = randomWeights (num_hidden,num_inputs);
+Theta2 = randomWeights (1,num_hidden);
+initial_params_nn = [Theta1(:); Theta2(:)];
+cost = nn_costFunction (initial_params_nn, num_inputs, num_hidden, 1, X_tra, Y_tra,lambda);
+
+printf("Calculating initial weights...");
+for i = 1:rand_weights_iterations
+	printf(".");
+	Theta1_aux = randomWeights (num_hidden,num_inputs);
+	Theta2_aux = randomWeights (1,num_hidden);
+	initial_params_nn_aux = [Theta1_aux(:); Theta2_aux(:)];
+	newCost = nn_costFunction (initial_params_nn_aux, num_inputs, num_hidden, 1, X_tra, Y_tra,lambda);
+	if (newCost < cost)
+		Theta1 = Theta1_aux;
+		Theta2 = Theta2_aux;
+		fflush(stdout);
+	endif;
+
+endfor;
+printf("\n");
+#Roll the matrices in one initial vector
+initial_params_nn = [Theta1(:); Theta2(:)];
 
 endfunction
 
@@ -363,7 +389,3 @@ endfunction
 function error= nn_getError(X, y, Theta1, Theta2,params_nn, num_inputs, num_hidden)
 	error =  nn_costFunction(params_nn, num_inputs, num_hidden, 1,X, y,0);
 endfunction
-
-
-
-
