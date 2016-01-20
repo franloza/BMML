@@ -34,8 +34,8 @@
           <h1>
 <a id="bank-marketing-machine-learning" class="anchor" href="#bank-marketing-machine-learning" aria-hidden="true"><span class="octicon octicon-link"></span></a>Bank Marketing Machine Learning</h1>
 
-<h1>
-<a id="introduction" class="anchor" href="#introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introduction</h1>
+<h2>
+<a id="introduction" class="anchor" href="#introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introduction</h2>
 
 <p><strong>BMML</strong> is the final project for the subject Machine Learning teached at Universidad
  Complutense de Madrid.</p>
@@ -74,8 +74,8 @@ to do basic predictions using the API of the program.</p>
 </li>
 </ul>
 
-<h1>
-<a id="general-api" class="anchor" href="#general-api" aria-hidden="true"><span class="octicon octicon-link"></span></a>General API</h1>
+<h2>
+<a id="general-api" class="anchor" href="#general-api" aria-hidden="true"><span class="octicon octicon-link"></span></a>General API</h2>
 
 <div class="highlight highlight-source-matlab"><pre>#Index Analysis using logistic regression
 theta = logReg(X,Y,lCurves);
@@ -87,19 +87,19 @@ theta = neuralNetwork(X,Y,lCurves);
 model = svm(X,Y);
 </pre></div>
 
-<h1>
-<a id="parameters" class="anchor" href="#parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Parameters</h1>
-
 <h2>
-<a id="general-parameters" class="anchor" href="#general-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>General Parameters</h2>
+<a id="parameters" class="anchor" href="#parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Parameters</h2>
+
+<h3>
+<a id="general-parameters" class="anchor" href="#general-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>General Parameters</h3>
 
 <p>In <code>main.m</code></p>
 
 <div class="highlight highlight-source-matlab"><pre>lite = <span class="pl-c1">true</span>; #Loads only the <span class="pl-c1">10</span><span class="pl-c">% of all the raw date</span>
 lCurves = <span class="pl-c1">false</span>; #Generates learning curves <span class="pl-k">for</span> analizing bias/variance</pre></div>
 
-<h2>
-<a id="logistic-regression-parameters" class="anchor" href="#logistic-regression-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Logistic Regression Parameters</h2>
+<h3>
+<a id="logistic-regression-parameters" class="anchor" href="#logistic-regression-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Logistic Regression Parameters</h3>
 
 <p>In <code>logReg.m</code></p>
 
@@ -107,8 +107,8 @@ lCurves = <span class="pl-c1">false</span>; #Generates learning curves <span cla
 lambda = <span class="pl-c1">500</span>; #Regularization term
 percentage_training = <span class="pl-c1">0.8</span>; #Training examples <span class="pl-k">/</span> Total examples</pre></div>
 
-<h2>
-<a id="neural-network-parameters" class="anchor" href="#neural-network-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Neural Network Parameters</h2>
+<h3>
+<a id="neural-network-parameters" class="anchor" href="#neural-network-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Neural Network Parameters</h3>
 
 <p>In <code>neuralNetwork.m</code></p>
 
@@ -118,8 +118,8 @@ percentage_training = <span class="pl-c1">0.7</span>; #Training examples <span c
 num_inputs = <span class="pl-c1">columns</span>(X); #Number of nodes of the <span class="pl-k">input</span> layer
 num_hidden = <span class="pl-c1">20</span>; #Number of nodes of the <span class="pl-c1">hidden</span> layer</pre></div>
 
-<h2>
-<a id="svm-parameters" class="anchor" href="#svm-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>SVM Parameters</h2>
+<h3>
+<a id="svm-parameters" class="anchor" href="#svm-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>SVM Parameters</h3>
 
 <p>In <code>svm.m</code></p>
 
