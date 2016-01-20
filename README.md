@@ -44,11 +44,7 @@ model = svm(X,Y);
 #Parameters
 ##General Parameters
 * Enable learning curves
-* Select a lite version of the data (10% of the total) instead the raw data
-
-  __NOTE__: It's strongly recommended to use the lite version when neural networks
-  and SVM are used
-
+* Select the portion of data to be used
 
 ##Logistic Regression Parameters
 * Normalize the data
@@ -61,11 +57,18 @@ model = svm(X,Y);
 * Select the learning rate of the learning curves
 
 ##Neural Network Parameters
-* [Logistic Regression Parameters](#logistic-regression-parameters)
-* Select number of nodes of the input layer
-* Select number of nodes of the hidden layer
-* Select maximum number of iteratios
-
+* Normalize the data
+* Select default lambda parameter
+* Select the percentage of data to be used as training examples
+* Enable selection of the best lambda parameter
+* Select the number of iterations to find optimal initial weight matrix
+* Select the learning rate of the learning curves
+* Select number of nodes of the hidden layer (default)
+* Enable selection of the best number of nodes in the hidden layer
+* Select maximum number of iterations in the training process
+* Select the percentage of data to be used as adjustment examples
+* Select the range of lambda values to be used in the adjustment process
+* Select the range of nodes to be used in the adjustment process
 
 ##SVM Parameters
 * Normalize the data

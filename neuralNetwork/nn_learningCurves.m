@@ -9,17 +9,14 @@ function   [errTraining, errValidation,Theta1,Theta2] = nn_learningCurves  (X,y,
 
 m = rows(X);
 
-printf("Calculating learning curves");
+params_nn = initial_params_nn;
+printf("Calculating learning curves...\n");
 #Iterates over the increasing subsets of X and Y
 for i= 1:learningFreq:m
-   printf(".");
-   [Theta1, Theta2] = nn_training(X(1:i,:), y(1:i) ,num_inputs,
-    num_hidden,1,lambda,initial_params_nn,max_iterations);
+   [Theta1, Theta2] = nn_training(X(1:i,:), y(1:i) ,num_inputs,num_hidden,1,lambda,params_nn,max_iterations);
    params_nn = [Theta1(:); Theta2(:)];
-   errTraining(fix(i/learningFreq) + 1) = nn_costFunction (params_nn,num_inputs, num_hidden,1,
-    X(1:i,:),y(1:i),0);
-   errValidation(fix(i/learningFreq) + 1) = nn_costFunction (params_nn,num_inputs, num_hidden,1,
-   Xval,yval,0);
+   errTraining(fix(i/learningFreq) + 1) = nn_costFunction (params_nn,num_inputs, num_hidden,1,X(1:i,:),y(1:i),0);
+   errValidation(fix(i/learningFreq) + 1) = nn_costFunction (params_nn,num_inputs, num_hidden,1, Xval,yval,0);
    fflush(stdout);
 end
 

@@ -6,13 +6,13 @@ source("svm/svm.m");
 
 %-----------------------------------------------------------------------------
 #PARAMETERS
-lCurves = false; #Generates learning curves for analizing bias/variance
-lite = true; #Loads only the 10% of all the raw date
+lCurves = true; #Generates learning curves for analizing bias/variance
+dataPercentage = 1; #From 0 to 1, portion of raw data to load (1 is 100%)
 %-----------------------------------------------------------------------------
 #NOTE: To use an algorithm, just decomment its function
 
 #Extracts the data for classification
-[X,Y] = getData(lite);
+[X,Y] = getData(dataPercentage);
 
 #Index Analysis using logistic regression
 #theta = logReg(X,Y,lCurves);

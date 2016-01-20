@@ -17,11 +17,6 @@ percentage_training = 0.7; #Training examples / Total examples
 adjusting = true; #Activates adjustment process
 threshold = 0.70; #Minimun degree of certainty required
 
-#The learning frequency only applies to learning curves. Each learningFreq
-#iterations, the error is recalculated. #The lower learningFreq is, the slower
-#the calculation will be
-learningFreq = fix(rows(X) * 0.1);
-
 #ADJUSTMENT PARAMETERS (ONLY APPLIES IF adjusting = true)
 percentage_adjustment= 0.05; #Adjustment examples / Total examples
 lambdaValues = [0,0.1,0.2,0.5,1,2,5,10,15,20,25]; #Possible values for lambda
@@ -31,6 +26,9 @@ lambdaValues = [0,0.1,0.2,0.5,1,2,5,10,15,20,25]; #Possible values for lambda
 n_tra = fix(percentage_training * rows(X)); # Number of training examples
 X_tra = X(1:n_tra,:);
 Y_tra = Y(1:n_tra,:);
+
+#Adjust the learning rate
+learningFreq = fix(rows(X_tra) * 0.2);
 
 if(adjusting)
 		n_adj = fix(percentage_adjustment * rows(X)); #Number of adjustment examples
@@ -62,8 +60,7 @@ endif;
 #Learning Curves + training or just training
 
 if (lCurves)
-	[errTraining, errValidation,theta] = lr_learningCurves (X_tra,Y_tra,X_val,Y_val,
-		lambda,learningFreq);
+	[errTraining, errValidation,theta] = lr_learningCurves (X_tra,Y_tra,X_val,Y_val,lambda,learningFreq);
 
 	#Save/Load the result in disk (For debugging)
 	save learningCurves.tmp errTraining errValidation theta;

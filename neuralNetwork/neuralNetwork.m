@@ -10,35 +10,39 @@ warning("off");
 %Main function of the logistic regression analysis
 function [Theta1,Theta2] = neuralNetwork(X,Y,lCurves)
 
-
+num_inputs = columns(X); #Number of nodes of the input layer
 %-----------------------------------------------------------------------------
 #PARAMETERS
 normalize = false; #Normalize the data or not
-lambda = 0; #Regularization term (default)
-percentage_training = 0.7; #Training examples / Total examples
-adjusting = false; #Activates adjustment process
-threshold = 0.70; #Minimun degree of certainty required
-rand_weights_iterations = 10; #Number of iterations to calculate the best initial weight matrix
-
-#The learning frequency only applies to learning curves. Each learningFreq
-#iterations, the error is recalculated. #The lower learningFreq is, the slower
-#the calculation will be
-learningFreq = fix(rows(X) * 0.2);
+lambda = 10; #Regularization term (default)
+percentage_training = 0.2; #Training examples / Total examples
+adjustLambda = false; #Look for optimal lambda
+rand_weights_iterations = 1; #Number of iterations to calculate the best initial weight matrix
 
 #NEURAL NETWORK PARAMETERS
-num_inputs = columns(X); #Number of nodes of the input layer
-num_hidden = 40; #Number of nodes of the hidden layer
+num_hidden = 120; #Number of nodes of the hidden layer
 max_iterations = 200; #Number of maximum iterations in the training of the neural network
+adjustNodes = false; #Look for the optimal number of hidden nodes
 
-#ADJUSTMENT PARAMETERS (ONLY APPLIES IF adjusting = true)
-percentage_adjustment= 0.05; #Adjustment examples / Total examples
-lambdaValues = [0,1,10]; #Possible values for lambda
+#ADJUSTMENT PARAMETERS
+percentage_adjustment= 0.1; #Adjustment examples / Total examples
+lambdaValues = [0,1,10,100]; #Possible values for lambda
+hidden_nodes = [100:20:200]; #Posible number of nodes
 %-----------------------------------------------------------------------------
+
+if(adjustNodes || adjustLambda)
+	adjusting = true;
+else
+	adjusting = false;
+endif;
 
 # Distribution of the examples
 n_tra = fix(percentage_training * rows(X)); # Number of training examples
 X_tra = X(1:n_tra,:);
 Y_tra = Y(1:n_tra,:);
+
+#Adjust the learning rate
+learningFreq = fix(rows(X_tra) * 0.2);
 
 if(adjusting)
 		n_adj = fix(percentage_adjustment * rows(X)); #Number of adjustment examples
@@ -61,12 +65,19 @@ if(normalize)
 		X_val = featureNormalize (X_val);
 endif
 
+# Adjustment process(Search of optimal number of hidden nodes)
+if(adjustNodes)
+	[bestNodes,errorAdj] = nn_adjustNodes (X_tra,Y_tra,X_adj,Y_adj,num_inputs,lambda,hidden_nodes);
+	num_hidden = bestNodes;
+endif;
+
 #Initialization of the weight matrix with values that produces the minimum cost
 [initial_params_nn] = nn_initParams(X_tra,Y_tra,num_inputs, num_hidden,lambda,rand_weights_iterations);
 
+
 # Adjustment process(Search of optimal lambda)
-if(adjusting)
-	[bestLambda,errorAdj] = nn_adjustment (X_tra,Y_tra,X_adj,Y_adj,initial_params_nn,num_inputs, num_hidden,lambdaValues);
+if(adjustLambda)
+	[bestLambda,errorAdj] = nn_adjustLambda (X_tra,Y_tra,X_adj,Y_adj,initial_params_nn,num_inputs, num_hidden,lambdaValues);
 	lambda = bestLambda;
 endif;
 
@@ -84,6 +95,8 @@ if (lCurves)
 	G_nn_LearningCurves(X_tra,errTraining, errValidation,learningFreq);
 else
 	#Only Training
+	printf("Training...\n");
+	fflush(stdout);
 	[Theta1, Theta2] = nn_training (X_tra,Y_tra,num_inputs, num_hidden, 1, lambda,initial_params_nn,max_iterations);
 endif
 
@@ -104,8 +117,14 @@ if(adjusting)
 printf("-------------------------------------------------------------------:\n")
 #Adjustment results
 printf("ADJUSTMENT ANALYSIS\n")
+if(adjustLambda)
 printf("Best value for lambda: %3.2f\n",bestLambda);
 printf("Error of the adjustment examples for the best lambda: %3.4f\n",errorAdj);
+endif;
+if(adjustNodes)
+printf("Best number of hidden nodes: %i\n",bestNodes);
+printf("Error of the adjustment examples for the best number of nodes: %3.4f\n",errorAdj);
+endif;
 endif
 printf("-------------------------------------------------------------------:\n")
 #Error results
@@ -119,29 +138,12 @@ printf("Error in validation examples: %f\n",val_error);
 printf("Error difference: %f\n",val_error - tra_error);
 printf("-------------------------------------------------------------------:\n")
 
-#Report of the precision/recall results over the validation examples
-[precision,recall,fscore] = nn_precisionRecall(X_val, Y_val,Theta1,Theta2,
-	threshold);
-printf("PRECISION/RECALL RESULTS (USER-DEFINED THRESHOLD):\n")
-printf("Threshold: %f\n",threshold);
-printf("Precision: %f\n",precision);
-printf("Recall: %f\n",recall);
-printf("Fscore: %f\n",fscore);
-printf("-------------------------------------------------------------------:\n")
-
 [opt_threshold,precision,recall,fscore] = nn_optRP(X_val, Y_val,Theta1,Theta2);
 printf("PRECISION/RECALL RESULTS (BEST F-SCORE):\n")
 printf("Optimum threshold: %f\n",opt_threshold);
 printf("Precision: %f\n",precision);
 printf("Recall: %f\n",recall);
 printf("Fscore: %f\n",fscore);
-printf("-------------------------------------------------------------------:\n")
-
-hits = sum( nn_prediction(X_val, Theta1,Theta2, threshold) == Y_val);
-printf("ACCURACY RESULTS (USER-DEFINED THRESHOLD)\n")
-printf("Threshold: %f\n",threshold);
-printf("Number of hits: %d of %d\n",hits,rows(X_val));
-printf("Percentage of accuracy: %3.2f%%\n",(hits/rows(X_val))*100);
 printf("-------------------------------------------------------------------:\n")
 
 [opt_threshold,hits] = nn_optAccuracy(X_val, Y_val,Theta1,Theta2);
@@ -155,10 +157,10 @@ endfunction
 
 %===============================================================================
 %Training function
-function [Theta1, Theta2] = nn_training (X,y,num_inputs, num_hidden, num_labels, lambda,initial_params_nn,max_iterations)
+function [Theta1, Theta2,cost] = nn_training (X,y,num_inputs, num_hidden, num_labels, lambda,initial_params_nn,max_iterations)
 
 options = optimset("GradObj", "on", "MaxIter", max_iterations);
-[params_nn] = fmincg (@(t)(nn_costFunction(t , num_inputs, num_hidden,num_labels, X, y , lambda)) , initial_params_nn , options);
+[params_nn,cost] = fmincg (@(t)(nn_costFunction(t , num_inputs, num_hidden,num_labels, X, y , lambda)) , initial_params_nn , options);
 
 #Unroll the resulting theta vector into matrices
 
@@ -166,6 +168,7 @@ Theta1 = reshape (params_nn (1:num_hidden * (num_inputs + 1)), num_hidden, (num_
 
 Theta2 = reshape (params_nn ((1 + ( num_hidden * (num_inputs + 1))): end ), num_labels ,( num_hidden + 1 ));
 
+cost = cost(rows(cost));
 endfunction
 
 %===============================================================================
@@ -257,30 +260,30 @@ weightMatrix = rand(L_in, 1 + L_out) * (2*INIT_EPSILON) - INIT_EPSILON;
 
 endfunction
 
-
 %===============================================================================
 %Function that selects the best initial weight matrix for the neural network training
 function [initial_params_nn] = nn_initParams(X_tra,Y_tra,num_inputs, num_hidden,lambda,rand_weights_iterations);
+printf("Calculating initial weights...\n");
+max_iterations=5;
 Theta1 = randomWeights (num_hidden,num_inputs);
 Theta2 = randomWeights (1,num_hidden);
 initial_params_nn = [Theta1(:); Theta2(:)];
-cost = nn_costFunction (initial_params_nn, num_inputs, num_hidden, 1, X_tra, Y_tra,lambda);
+[Theta1_aux,Theta2_aux,cost] = nn_training (X_tra,Y_tra,num_inputs, num_hidden, 1, lambda,initial_params_nn,max_iterations);
 
-printf("Calculating initial weights...");
-for i = 1:rand_weights_iterations
-	printf(".");
+for i = 1:rand_weights_iterations-1
 	Theta1_aux = randomWeights (num_hidden,num_inputs);
 	Theta2_aux = randomWeights (1,num_hidden);
 	initial_params_nn_aux = [Theta1_aux(:); Theta2_aux(:)];
-	newCost = nn_costFunction (initial_params_nn_aux, num_inputs, num_hidden, 1, X_tra, Y_tra,lambda);
+
+	[Theta1_aux,Theta2_aux,newCost] = nn_training (X_tra,Y_tra,num_inputs, num_hidden, 1, lambda,initial_params_nn_aux,max_iterations);
+
 	if (newCost < cost)
 		Theta1 = Theta1_aux;
 		Theta2 = Theta2_aux;
-		fflush(stdout);
 	endif;
+	fflush(stdout);
 
 endfor;
-printf("\n");
 #Roll the matrices in one initial vector
 initial_params_nn = [Theta1(:); Theta2(:)];
 
