@@ -14,11 +14,11 @@ printf("Calculating learning curves");
 for i= 1:learningFreq:m
    printf(".");
    [Theta1, Theta2] = nn_training(X(1:i,:), y(1:i) ,num_inputs,
-    num_hidden,lambda,initial_params_nn);
+    num_hidden,1,lambda,initial_params_nn);
    params_nn = [Theta1(:); Theta2(:)];
-   errTraining(fix(i/learningFreq) + 1) = nn_costFunction (params_nn,num_inputs, num_hidden,
+   errTraining(fix(i/learningFreq) + 1) = nn_costFunction (params_nn,num_inputs, num_hidden,1,
     X(1:i,:),y(1:i),0);
-   errValidation(fix(i/learningFreq) + 1) = nn_costFunction (params_nn,num_inputs, num_hidden,
+   errValidation(fix(i/learningFreq) + 1) = nn_costFunction (params_nn,num_inputs, num_hidden,1,
    Xval,yval,0);
    fflush(stdout);
 end

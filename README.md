@@ -64,6 +64,7 @@ model = svm(X,Y);
 * [Logistic Regression Parameters](#logistic-regression-parameters)
 * Select number of nodes of the input layer
 * Select number of nodes of the hidden layer
+* Select maximum number of iteratios
 
 
 ##SVM Parameters

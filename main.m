@@ -6,7 +6,7 @@ source("svm/svm.m");
 
 %-----------------------------------------------------------------------------
 #PARAMETERS
-lCurves = false; #Generates learning curves for analizing bias/variance
+lCurves = true; #Generates learning curves for analizing bias/variance
 lite = true; #Loads only the 10% of all the raw date
 %-----------------------------------------------------------------------------
 #NOTE: To use an algorithm, just decomment its function

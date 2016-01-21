@@ -27,7 +27,7 @@ learningFreq = fix(rows(X) * 0.2);
 #NEURAL NETWORK PARAMETERS
 num_inputs = columns(X); #Number of nodes of the input layer
 num_hidden = 500; #Number of nodes of the hidden layer
-max_iterations = 500;
+max_iterations = 200;
 
 #ADJUSTMENT PARAMETERS (ONLY APPLIES IF adjusting = true)
 percentage_adjustment= 0.05; #Adjustment examples / Total examples
