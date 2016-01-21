@@ -26,7 +26,8 @@ learningFreq = fix(rows(X) * 0.2);
 
 #NEURAL NETWORK PARAMETERS
 num_inputs = columns(X); #Number of nodes of the input layer
-num_hidden = 20; #Number of nodes of the hidden layer
+num_hidden = 500; #Number of nodes of the hidden layer
+max_iterations = 500;
 
 #ADJUSTMENT PARAMETERS (ONLY APPLIES IF adjusting = true)
 percentage_adjustment= 0.05; #Adjustment examples / Total examples
@@ -85,9 +86,8 @@ if (lCurves)
 	#Show the graphics of the learning curves
 	G_nn_LearningCurves(X_tra,errTraining, errValidation,learningFreq);
 else
-	#Only Training
-	[Theta1, Theta2] = nn_training (X_tra,Y_tra,num_inputs, num_hidden,lambda,
-		initial_params_nn);
+	#Only Training	
+	[Theta1, Theta2] = nn_training (X_tra,Y_tra,num_inputs, num_hidden, 1, lambda,initial_params_nn,max_iterations);
 endif
 
 #Report of the training:
@@ -158,39 +158,31 @@ endfunction
 
 %===============================================================================
 %Training function
-function [Theta1, Theta2] = nn_training (X,y,num_inputs, num_hidden,lambda,
-	initial_params_nn)
+function [Theta1, Theta2] = nn_training (X,y,num_inputs, num_hidden, num_labels, lambda,initial_params_nn,max_iterations)
 
-options = optimset("GradObj", "on", "MaxIter", 200);
-[params_nn] = fmincg (@(t)(nn_costFunction(t , num_inputs, num_hidden,X, y ,
- 	lambda)) , initial_params_nn , options);
+options = optimset("GradObj", "on", "MaxIter", 100);
+[params_nn] = fmincg (@(t)(nn_costFunction(t , num_inputs, num_hidden,num_labels, X, y , lambda)) , initial_params_nn , options);
 
 #Unroll the resulting theta vector into matrices
 
-Theta1 = reshape (params_nn (1:num_hidden * (num_inputs + 1)), num_hidden,
- 	(num_inputs + 1));
+Theta1 = reshape (params_nn (1:num_hidden * (num_inputs + 1)), num_hidden, (num_inputs + 1));
 
-Theta2 = reshape (params_nn ((1 + ( num_hidden * (num_inputs + 1))): end ), 1
-	,( num_hidden + 1 ));
+Theta2 = reshape (params_nn ((1 + ( num_hidden * (num_inputs + 1))): end ), num_labels ,( num_hidden + 1 ));
 
 endfunction
 
 %===============================================================================
 % nn_costFunction calculates the cost and the gradient of a neural network of
 %two layers
-function [J, grad] = nn_costFunction (params_nn, num_inputs, num_hidden, X,
-	y,lambda)
+function [J, grad] = nn_costFunction (params_nn, num_inputs, num_hidden, num_labels, X, y,lambda)
 warning ("off");
 
 m = length(X(:,1));
 
-# Reshape params_nn back into the the weight matrices for our 2-layer neural
-#network
-Theta1 = reshape (params_nn (1:num_hidden * (num_inputs + 1)), num_hidden,
-	(num_inputs + 1));
+# Reshape params_nn back into the the weight matrices for our 2-layer neural network
+Theta1 = reshape (params_nn (1:num_hidden * (num_inputs + 1)), num_hidden, (num_inputs + 1));
 
-Theta2 = reshape (params_nn ((1 + ( num_hidden * (num_inputs + 1))): end ), 1
-	,( num_hidden + 1 ));
+Theta2 = reshape (params_nn ((1 + ( num_hidden * (num_inputs + 1))): end ), num_labels ,( num_hidden + 1 ));
 
 # Initialize the variables
 J = 0;
@@ -207,9 +199,16 @@ a2 = [ones(1, columns(a2)); a2];
 z3 = Theta2 * a2;
 a3 = sigmoidFunction(z3);
 
+#Initializes and gives values to the yk matrix (num_labels * m)
+
+yk = zeros(num_labels, m);
+for i= 1 :m
+  yk(:,i) = (y(i)==[1:num_labels]');
+end
+
 #Calculate the cost
 
-J = (1 / m) * sum(sum((-1 * y).*(log(a3)) - (1-y).*(log(1-a3))));
+J = (1 / m) * sum(sum((-1 * yk).*(log(a3)) - (1-yk).*(log(1-a3))));
 
 # Regulization of the cost
 
@@ -223,7 +222,7 @@ J = J + (regulation_theta1 + regulation_theta2)*lambda/(2*m);
 
 #Backpropagation
 
-d3 = (a3-y');
+d3 = (a3-yk);
 #d2 = a2.*(1-a2).*(Theta2'*d3);
 d2 = (Theta2'*d3) .* sigmoidDerivative(z2);
 
@@ -244,7 +243,7 @@ end
 # Regularization of the gradient
 
 Theta1_grad = (D1./m) + ((lambda/m) .* [zeros( num_hidden, 1 ), Theta1(:,2:columns(Theta1))]);
-Theta2_grad = (D2./m) + ((lambda/m) .* [zeros( 1, 1 ), Theta2(:,2:columns(Theta2))]);
+Theta2_grad = (D2./m) + ((lambda/m) .* [zeros( num_labels, 1 ), Theta2(:,2:columns(Theta2))]);
 
 # Unroll gradients
 grad = [Theta1_grad(:) ; Theta2_grad(:)];
@@ -292,7 +291,7 @@ function [precision,recall,fscore] = nn_precisionRecall(X, y,Theta1, Theta2,thre
 	#Precision calculation
 
 	true_positives = sum(pred_y & y); #Logic AND to extract the predicted
-																		#positives that are true
+										#positives that are true
 	pred_positives = sum(pred_y);
 
 	if(pred_positives != 0)
@@ -362,5 +361,9 @@ endfunction
 %===============================================================================
 %Function to calculate the error produced by Theta1,Theta2 over a set of examples
 function error= nn_getError(X, y, Theta1, Theta2,params_nn, num_inputs, num_hidden)
-	error =  nn_costFunction(params_nn, num_inputs, num_hidden, X, y,0);
+	error =  nn_costFunction(params_nn, num_inputs, num_hidden, 1,X, y,0);
 endfunction
+
+
+
+
