@@ -20,5 +20,5 @@ dataPercentage = 0.4; #From 0 to 1, portion of raw data to load (1 is 100%)
 #Index Analysis using Neural networks
 #theta = neuralNetwork(X,Y,lCurves);
 
-#Index Analysis using Suppor Vector Machines
+#Index Analysis using Support Vector Machines
 model = svm(X,Y);

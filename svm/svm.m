@@ -12,8 +12,8 @@ function [model] = svm(X,Y)
 normalize = false; #Normalize the data or not
 percentage_training = 0.2; #Training examples / Total examples
 adjusting = false; #Activates adjustment process
-C = 1; #Default C parameter
-sigma = 1; #Default sigma parameter
+C =  200; #Default C parameter
+sigma = .1; #Default sigma parameter
 
 #ADJUSTMENT PARAMETERS (ONLY APPLIES IF adjusting = true)
 percentage_adjustment= 0.02; #Adjustment examples / Total examples
@@ -82,10 +82,8 @@ endif
 
 #We extract the model using the training examples and the selected values of C
 #and sigma
-model = svmTrain(X_tra, Y_tra, C,true, @(x1, x2)gaussianKernel(x1, x2, values(sigma)));
-#cd svm/libsvm;
-#svmtrain();
-#svmPredict(model, X_val)
+model = svmTrain(X_tra, Y_tra, C,true, @(x1, x2)gaussianKernel(x1, x2, sigma,1e-3,10));
+svmPredict(model, X_val);
 
 #Report of the training:
 printf("\nSVM REPORT\n")
@@ -115,11 +113,19 @@ printf("Precision: %f\n",precision);
 printf("Recall: %f\n",recall);
 printf("Fscore: %f\n",fscore);
 printf("-------------------------------------------------------------------:\n")
-hits = sum(svmPredict(model, X_val) == Y_val);
-printf("ACCURACY RESULTS (BEST ACCURACY)\n")
+
+hits = sum(svmPredict(model, X_tra) == Y_tra);
+printf("ACCURACY RESULTS (TRAINING EXAMPLES)\n")
 printf("Number of hits %d of %d\n",hits,rows(X_val));
 printf("Percentage of accuracy: %3.2f%%\n",(hits/rows(X_val))*100);
 printf("-------------------------------------------------------------------:\n")
+
+hits = sum(svmPredict(model, X_val) == Y_val);
+printf("ACCURACY RESULTS (VALIDATION EXAMPLES)\n")
+printf("Number of hits %d of %d\n",hits,rows(X_val));
+printf("Percentage of accuracy: %3.2f%%\n",(hits/rows(X_val))*100);
+printf("-------------------------------------------------------------------:\n")
+
 
 endfunction
 
