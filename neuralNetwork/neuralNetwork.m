@@ -21,7 +21,7 @@ rand_weights_iterations = 1; #Number of iterations to calculate the best initial
 
 #NEURAL NETWORK PARAMETERS
 num_hidden = 120; #Number of nodes of the hidden layer
-max_iterations = 200; #Number of maximum iterations in the training of the neural network
+max_iterations = 1000; #Number of maximum iterations in the training of the neural network
 adjustNodes = false; #Look for the optimal number of hidden nodes
 
 #ADJUSTMENT PARAMETERS

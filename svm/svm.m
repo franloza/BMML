@@ -10,7 +10,7 @@ function [model] = svm(X,Y)
 %-------------------------------------------------------------------------------
 #PARAMETERS
 normalize = false; #Normalize the data or not
-percentage_training = 0.8; #Training examples / Total examples
+percentage_training = 0.2; #Training examples / Total examples
 adjusting = false; #Activates adjustment process
 C = 1; #Default C parameter
 sigma = 1; #Default sigma parameter
@@ -20,7 +20,6 @@ percentage_adjustment= 0.02; #Adjustment examples / Total examples
 values = [0.01,1,10,100]; #Possible combinations of C and sigma
 
 %------------------------------------------------------------------------------
-
 # Distribution of the examples
 n_tra = fix(percentage_training * rows(X)); # Number of training examples
 X_tra = X(1:n_tra,:);
@@ -49,8 +48,6 @@ endif
 
 if(adjusting)
 	# Adjustment process(Search of optimal C and sigma)
-
-	#Prove the different combiations for the values of C and sigma
 	fprintf('\nAdjusting ...');
 	dots = 12;
 	for i=1:length(values)
@@ -70,7 +67,7 @@ if(adjusting)
 	endfor
 	fprintf(' Done! \n\n');
 	#Draw a 3D graphics for the adjustment results
-	svm_adjustmentPlot(values,FScoreMatrix);
+	svm_G_adjustment(values,FScoreMatrix);
 
 	#We chose the maximum value(s) of fscore and extract the values of C and sigma
 	#for this value
@@ -85,8 +82,10 @@ endif
 
 #We extract the model using the training examples and the selected values of C
 #and sigma
-model = svmTrain(X_tra, Y_tra, values(C),true, @(x1, x2)gaussianKernel(
-	x1, x2, values(sigma)));
+model = svmTrain(X_tra, Y_tra, C,true, @(x1, x2)gaussianKernel(x1, x2, values(sigma)));
+#cd svm/libsvm;
+#svmtrain();
+#svmPredict(model, X_val)
 
 #Report of the training:
 printf("\nSVM REPORT\n")
@@ -116,10 +115,50 @@ printf("Precision: %f\n",precision);
 printf("Recall: %f\n",recall);
 printf("Fscore: %f\n",fscore);
 printf("-------------------------------------------------------------------:\n")
+hits = sum(svmPredict(model, X_val) == Y_val);
+printf("ACCURACY RESULTS (BEST ACCURACY)\n")
+printf("Number of hits %d of %d\n",hits,rows(X_val));
+printf("Percentage of accuracy: %3.2f%%\n",(hits/rows(X_val))*100);
+printf("-------------------------------------------------------------------:\n")
 
 endfunction
 
 %===============================================================================
+%Function to extract the precision and the recall of a trained model given a
+%threshold
+function [precision,recall,fscore] = svm_precisionRecall(X, y,model)
+	#Get the predicted y values
+	pred_y = svmPredict(model,X);
+
+	#Precision calculation
+
+	true_positives = sum(pred_y & y); #Logic AND to extract the predicted
+																		#positives that are true
+	pred_positives = sum(pred_y);
+
+	if(pred_positives != 0)
+		precision = true_positives / pred_positives;
+	else
+		precision = 0;
+	endif
+
+	#Recall calculation
+	actual_positives = sum(y);
+	test = [pred_y,y,pred_y&y];
+
+	if(actual_positives != 0)
+		recall = true_positives / actual_positives;
+	else
+		recall = 0;
+	endif
+
+	#F-score calculation
+	fscore =  (2*precision*recall) / (precision + recall);
+
+endfunction
+
+%===============================================================================
+
 function [model] = svmTrain(X, Y, C,output, kernelFunction,...
                             tol, max_passes)
 %SVMTRAIN Trains an SVM classifier using a simplified version of the SMO
@@ -376,35 +415,3 @@ pred(p <  0) =  0;
 end
 
 %===============================================================================
-%Function to extract the precision and the recall of a trained model given a
-%threshold
-function [precision,recall,fscore] = svm_precisionRecall(X, y,model)
-	#Get the predicted y values
-	pred_y = svmPredict(model,X);
-
-	#Precision calculation
-
-	true_positives = sum(pred_y & y); #Logic AND to extract the predicted
-																		#positives that are true
-	pred_positives = sum(pred_y);
-
-	if(pred_positives != 0)
-		precision = true_positives / pred_positives;
-	else
-		precision = 0;
-	endif
-
-	#Recall calculation
-	actual_positives = sum(y);
-	test = [pred_y,y,pred_y&y];
-
-	if(actual_positives != 0)
-		recall = true_positives / actual_positives;
-	else
-		recall = 0;
-	endif
-
-	#F-score calculation
-	fscore =  (2*precision*recall) / (precision + recall);
-
-endfunction

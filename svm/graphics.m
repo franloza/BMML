@@ -1,4 +1,4 @@
-function svm_adjustmentPlot(values,FscoreMatrix)
+function svm_G_adjustment(values,FscoreMatrix)
 
 figure;
 surf(values, values, FscoreMatrix);

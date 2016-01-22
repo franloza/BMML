@@ -45,6 +45,24 @@ hold off;
 title("Adjusting lambda in neural networks")
 
 endfunction
+
+
+%===============================================================================
+
+function [] = G_nn_RecallPrecision(recalls,precisions,opt_threshold)
+
+figure;
+plot([0.01:0.01:1],recalls,"color", 'b',"linewidth",2);
+xlabel("Threshold");
+ylabel("Recall/Precision");
+hold on;
+plot([0.01:0.01:1],precisions,"color",'g',"linewidth",2);
+plot ([opt_threshold; opt_threshold], [0; 1],"color", 'm',"linestyle","--","linewidth",2);
+legend("Recall","Precision", "Optimum threshold");
+hold off;
+title("Recall/Precision with neural networks")
+
+endfunction
 %===============================================================================
 
 %Plots a function that shows the relationship between the evolution of the error
@@ -86,3 +104,25 @@ hold off;
 title("Recall/Precision with neural networks")
 
 endfunction
+
+
+%===============================================================================
+%Plots a function that shows the relation between increasing the threshold and
+%the evolution of the precision and the recall. Also points the optimum threshold
+function [] = G_nn_Accuracy(hits,opt_threshold,m)
+
+figure;
+percentages = (hits./m).*100;
+plot([0.01:0.01:1],percentages,"color", 'b',"linewidth",2);
+xlabel("Threshold");
+ylabel("Percentage of hits(%)");
+hold on;
+plot ([opt_threshold; opt_threshold], [0; 100],"color", 'm',"linestyle","--",
+"linewidth",1);
+legend("Percentage of hits","Optimum threshold");
+hold off;
+title("Accuracy with neural network");
+
+endfunction
+
+%===============================================================================
