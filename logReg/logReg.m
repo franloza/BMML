@@ -13,9 +13,11 @@ function [theta] = logReg(X,Y,lCurves)
 #PARAMETERS
 normalize = false; #Normalize the data or not
 lambda = 0; #Regularization term (default)
-percentage_training = 0.7; #Training examples / Total examples
+percentage_training = 0.65; #Training examples / Total examples
 adjusting = true; #Activates adjustment process
 threshold = 0.70; #Minimun degree of certainty required
+learningFreq = 0.05; #Adjust the learning rate
+maxIterations = 5000; #Select the maximum number of iterations in the training
 
 #ADJUSTMENT PARAMETERS (ONLY APPLIES IF adjusting = true)
 percentage_adjustment= 0.05; #Adjustment examples / Total examples
@@ -26,9 +28,6 @@ lambdaValues = [0,0.1,0.2,0.5,1,2,5,10,15,20,25]; #Possible values for lambda
 n_tra = fix(percentage_training * rows(X)); # Number of training examples
 X_tra = X(1:n_tra,:);
 Y_tra = Y(1:n_tra,:);
-
-#Adjust the learning rate
-learningFreq = fix(rows(X_tra) * 0.2);
 
 if(adjusting)
 		n_adj = fix(percentage_adjustment * rows(X)); #Number of adjustment examples
@@ -60,6 +59,7 @@ endif;
 #Learning Curves + training or just training
 
 if (lCurves)
+	learningFreq = fix(rows(X_tra) * learningFreq);
 	[errTraining, errValidation,theta] = lr_learningCurves (X_tra,Y_tra,X_val,Y_val,lambda,learningFreq);
 
 	#Save/Load the result in disk (For debugging)
@@ -70,7 +70,7 @@ if (lCurves)
 	G_lr_LearningCurves(X_tra,errTraining, errValidation,learningFreq);
 else
 	#Only Training
-	theta = lr_training(X_tra,Y_tra,lambda);
+	theta = lr_training(X_tra,Y_tra,lambda,maxIterations);
 endif
 
 #Report of the training:
@@ -139,7 +139,7 @@ endfunction
 %===============================================================================
 
 %Training function
-function [theta,cost] = lr_training(X,y,lambda)
+function [theta,cost] = lr_training(X,y,lambda,maxIterations)
 	m = length(y);
 	n = length(X(1,:));
 
@@ -150,7 +150,7 @@ function [theta,cost] = lr_training(X,y,lambda)
 	theta = initial_theta;
 
 	#Optimization
-	options = optimset('GradObj','on','MaxIter',1000);
+	options = optimset('GradObj','on','MaxIter',maxIterations);
 	[theta,cost] = fminunc(@(t)(lr_costFunction(t,X,y,lambda)), initial_theta,
 																																			options);
 

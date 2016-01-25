@@ -6,8 +6,8 @@ source("svm/svm.m");
 
 %-----------------------------------------------------------------------------
 #PARAMETERS
-lCurves = false; #Generates learning curves for analizing bias/variance
-dataPercentage = 0.4; #From 0 to 1, portion of raw data to load (1 is 100%)
+lCurves = true; #Generates learning curves for analizing bias/variance
+dataPercentage = 1; #From 0 to 1, portion of raw data to load (1 is 100%)
 %-----------------------------------------------------------------------------
 #NOTE: To use an algorithm, just decomment its function
 
@@ -15,10 +15,10 @@ dataPercentage = 0.4; #From 0 to 1, portion of raw data to load (1 is 100%)
 [X,Y] = getData(dataPercentage);
 
 #Index Analysis using logistic regression
-#theta = logReg(X,Y,lCurves);
+theta = logReg(X,Y,lCurves);
 
 #Index Analysis using Neural networks
 #theta = neuralNetwork(X,Y,lCurves);
 
 #Index Analysis using Support Vector Machines
-model = svm(X,Y);
+#model = svm(X,Y);

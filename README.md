@@ -49,12 +49,14 @@ model = svm(X,Y);
 ##Logistic Regression Parameters
 * Normalize the data
 * Select default lambda parameter
-* Enable adjusting process (Selection of the best lambda parameter)
 * Select the percentage of data to be used as training examples
+* Enable adjusting process (Selection of the best lambda parameter)
 * Select the default threshold (Minimum degree of certainty required)
+* Select the learning rate of the learning curves
+* Select maximum number of iterations in the training process
 * Select the percentage of data to be used as adjustment examples
 * Select the range of lambda values to be used in the adjustment process
-* Select the learning rate of the learning curves
+
 
 ##Neural Network Parameters
 * Normalize the data
@@ -72,10 +74,10 @@ model = svm(X,Y);
 
 ##SVM Parameters
 * Normalize the data
+* Select the percentage of data to be used as training examples
 * Enable adjusting process (Selection of the best lambda parameter)
 * Select default C value
 * Select default sigma value
-* Select the percentage of data to be used as training examples
 * Select the percentage of data to be used as adjustment examples
 * Select the range of C and sigma values to be used in the adjustment process
 

@@ -6,7 +6,7 @@
 
 function [errTraining, errValidation,theta] = lr_learningCurves (X,y,Xval,yval,
                                                           lambda,learningFreq)
-
+maxIterations = 1000;
 #Expand Training X and Validation X with a column of 1s (Independent term)
 m = rows(X);
 X1 = [ones(m,1),X];
@@ -18,7 +18,7 @@ printf("Calculating learning curves");
 
 for i= 1:learningFreq:m
    printf(".");
-   theta = lr_training(X(1:i,:), y(1:i) ,lambda);
+   theta = lr_training(X(1:i,:), y(1:i) ,lambda,maxIterations);
    errTraining(fix(i/learningFreq) + 1) = lr_costFunction (theta,X1(1:i,:),
     y(1:i),0);
    errValidation(fix(i/learningFreq)+ 1) = lr_costFunction (theta,Xval1,yval,0);
