@@ -23,7 +23,8 @@ The program is written in [Octave](https://www.gnu.org/software/octave/download.
 
 ##Geting Started
 * Checkout the source: `$ git clone https://github.com/franloza/BMML.git`
-* Configure the [parameters](#parameters)
+* Adapt the function [getData()](/data/getData.m) to return the positive and the negative examples
+* Configure the parameters for each algorithm
 * Comment/Decomment the algorithms you want to use in `main.m`
 * Run `$ octave main.m`
 
@@ -31,55 +32,31 @@ The program is written in [Octave](https://www.gnu.org/software/octave/download.
 
 ```matlab
 #Index Analysis using logistic regression
-theta = logReg(X,Y,lCurves);
+theta = logReg(posExamples,negExamples,lCurves);
 
 #Index Analysis using Neural networks
-theta = neuralNetwork(X,Y,lCurves);
+theta = neuralNetwork(posExamples,posExamples,lCurves);
 
 #Index Analysis using Support Vector Machines
-model = svm(X,Y);
+model = svm(posExamples,negExamples);
 
 ```
 
-#Parameters
-##General Parameters
+#Features
 * Enable learning curves
-* Select the portion of data to be used
-
-##Logistic Regression Parameters
-* Normalize the data
-* Select default lambda parameter
-* Select the percentage of data to be used as training examples
-* Enable adjusting process (Selection of the best lambda parameter)
-* Select the default threshold (Minimum degree of certainty required)
-* Select the learning rate of the learning curves
+* Select the portion of total data to be used
+* Data is equally distributed in positive and negative examples
+* Normalization support
+* Select distribution of examples in percentages (Training/Validation/Adjustment)
+* Select range of lambda values to be used in adjustment (Only LogReg and Neural Netwroks)
+* Select minimum degree of certainty required (Threshold)
+* Select the learning rate of the learning curves (Granularity of the graphics)
 * Select maximum number of iterations in the training process
-* Select the percentage of data to be used as adjustment examples
-* Select the range of lambda values to be used in the adjustment process
-
-
-##Neural Network Parameters
-* Normalize the data
-* Select default lambda parameter
-* Select the percentage of data to be used as training examples
-* Enable selection of the best lambda parameter
-* Select the number of iterations to find optimal initial weight matrix
-* Select the learning rate of the learning curves
-* Select number of nodes of the hidden layer (default)
-* Enable selection of the best number of nodes in the hidden layer
-* Select maximum number of iterations in the training process
-* Select the percentage of data to be used as adjustment examples
-* Select the range of lambda values to be used in the adjustment process
-* Select the range of nodes to be used in the adjustment process
-
-##SVM Parameters
-* Normalize the data
-* Select the percentage of data to be used as training examples
-* Enable adjusting process (Selection of the best lambda parameter)
-* Select default C value
-* Select default sigma value
-* Select the percentage of data to be used as adjustment examples
-* Select the range of C and sigma values to be used in the adjustment process
+* Enable selection of the best number of nodes in the hidden layer (Only Neural Networks)
+* Select the range of nodes to be used in the adjustment process (Only Neural Networks)
+* Select default C value (Only SVM)
+* Select default sigma value (Only SVM)
+* Select the range of C and sigma values to be used in the adjustment process (Only SVM)
 
 ##Demo
 ![Demo](https://cloud.githubusercontent.com/assets/9200682/12464641/4babce0a-bfca-11e5-8c96-3eb4b27c2307.png)
@@ -94,3 +71,6 @@ corresponding to the **Bank Marketing Data Set**
 
 Moreover, there is a paper that make reference to this data set:
 [S. Moro, P. Cortez and P. Rita. A Data-Driven Approach to Predict the Success of Bank Telemarketing. Decision Support Systems](http://repositorium.sdum.uminho.pt/bitstream/1822/30994/1/dss-v3.pdf)
+
+##License
+BMML is released under the MIT License. For more information, see the [License](LICENSE);

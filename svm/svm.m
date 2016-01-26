@@ -20,26 +20,69 @@ percentage_adjustment= 0.02; #Adjustment examples / Total examples
 values = [0.01,1,10,100]; #Possible combinations of C and sigma
 
 %------------------------------------------------------------------------------
-# Distribution of the examples
-n_tra = fix(percentage_training * rows(X)); # Number of training examples
-X_tra = X(1:n_tra,:);
-Y_tra = Y(1:n_tra,:);
+# Distribution of the examples (Positive and negative examples are equally
+ #distributed)
+
+#Number of features
+numFeatures = columns(posExamples);
+
+# Number of training examples
+n_tra_pos = fix(percentage_training * rows(posExamples));
+n_tra_neg =	fix(percentage_training * rows(negExamples));
+
+#Selection of training examples
+traExamples = [posExamples(1:n_tra_pos,:);negExamples(1:n_tra_neg,:)];
+
+#Permutate the order of the training examples
+traExamples = traExamples(randperm(size(traExamples,1)),:);
+
+X_tra = traExamples(:,1:numFeatures-1);
+Y_tra = traExamples(:,numFeatures);
 
 if(adjusting)
-		n_adj = fix(percentage_adjustment * rows(X)); #Number of adjustment examples
-		n_val = rows(X) - (n_tra + n_adj);   #Number of validation examples
-		X_adj = X(n_tra+1:n_tra + n_adj,:);
-		X_val = X(n_tra + n_adj+1:rows(X),:);
+		#Number of adjustment examples
+		n_adj_pos = fix(percentage_adjustment * rows(posExamples));
+		n_adj_neg =	fix(percentage_adjustment * rows(negExamples));
+
+		#Number of validation examples
+		n_val_pos = rows(posExamples) - (n_tra_pos + n_adj_pos);
+		n_val_neg =	rows(negExamples) - (n_tra_neg + n_adj_neg);
+
+		#Selection of adjustment examples
+		adjExamples = [posExamples(n_tra_pos+1:n_tra_pos+n_adj_pos,:);
+									 negExamples(n_tra_neg+1:n_tra_neg+n_adj_neg,:)];
+
+		#Permutate the order of the adjustment examples
+ 	  adjExamples = adjExamples(randperm(size(adjExamples,1)),:);
+
+		X_adj = adjExamples(:,1:numFeatures-1);
+
+		#Selection of validation examples
+		valExamples = [posExamples(n_tra_pos+n_adj_pos+1:rows(posExamples),:);
+									 negExamples(n_tra_neg+n_adj_neg+1:rows(negExamples),:)];
+
+	  #Permutate the order of the validation examples
+	  valExamples = valExamples(randperm(size(valExamples,1)),:);
+
 		if(normalize)
 				X_adj = featureNormalize (X_adj);
 		endif
-		Y_adj = Y(n_tra+1:n_tra + n_adj,:);
-		Y_val = Y(n_tra + n_adj+1:rows(X),:);
+		Y_adj = adjExamples(:,numFeatures);
+
 else
-		n_val = rows(X) - n_tra;  				 #Number of validation examples
-		X_val = X(n_tra+1:rows(X),:);
-		Y_val = Y(n_tra+1:rows(X),:);
+	 #Number of validation examples
+	 n_val_pos = rows(posExamples) - n_tra_pos;
+	 n_val_neg =	rows(negExamples) - n_tra_neg;
+	 valExamples = [posExamples(n_tra_pos+1:rows(posExamples),:);
+	 							 negExamples(n_tra_neg+1:rows(negExamples),:)];
+
+	 #Permutate the order of the validation examples
+	 valExamples = valExamples(randperm(size(valExamples,1)),:);
+
 endif;
+
+X_val = valExamples(:,1:numFeatures-1);
+Y_val = valExamples(:,numFeatures);
 
 if(normalize)
 		X_tra = featureNormalize (X_tra);

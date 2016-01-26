@@ -8,26 +8,27 @@ source("extra/sigmoidDerivative.m");
 warning("off");
 
 %Main function of the logistic regression analysis
-function [Theta1,Theta2] = neuralNetwork(X,Y,lCurves)
+function [Theta1,Theta2] = neuralNetwork(posExamples,negExamples,lCurves)
 
-num_inputs = columns(X); #Number of nodes of the input layer
+num_inputs = columns(posExamples)-1; #Number of nodes of the input layer
 %-----------------------------------------------------------------------------
 #PARAMETERS
 normalize = false; #Normalize the data or not
 lambda = 10; #Regularization term (default)
-percentage_training = 0.2; #Training examples / Total examples
-adjustLambda = false; #Look for optimal lambda
-rand_weights_iterations = 1; #Number of iterations to calculate the best initial weight matrix
+percentage_training = 0.65; #Training examples / Total examples
+adjustLambda = true; #Look for optimal lambda
+rand_weights_iterations = 10; #Number of iterations to calculate the best initial weight matrix
+learningFreq = 0.2; #Adjust the learning rate (for learning curves)
 
 #NEURAL NETWORK PARAMETERS
 num_hidden = 120; #Number of nodes of the hidden layer
 max_iterations = 1000; #Number of maximum iterations in the training of the neural network
-adjustNodes = false; #Look for the optimal number of hidden nodes
+adjustNodes = true; #Look for the optimal number of hidden nodes
 
 #ADJUSTMENT PARAMETERS
-percentage_adjustment= 0.1; #Adjustment examples / Total examples
+percentage_adjustment= 0.05; #Adjustment examples / Total examples
 lambdaValues = [0,1,10,100]; #Possible values for lambda
-hidden_nodes = [100:20:200]; #Posible number of nodes
+hidden_nodes = [20:40:220]; #Posible number of nodes
 %-----------------------------------------------------------------------------
 
 if(adjustNodes || adjustLambda)
@@ -36,29 +37,69 @@ else
 	adjusting = false;
 endif;
 
-# Distribution of the examples
-n_tra = fix(percentage_training * rows(X)); # Number of training examples
-X_tra = X(1:n_tra,:);
-Y_tra = Y(1:n_tra,:);
+# Distribution of the examples (Positive and negative examples are equally
+ #distributed)
 
-#Adjust the learning rate
-learningFreq = fix(rows(X_tra) * 0.2);
+#Number of features
+numFeatures = columns(posExamples);
+
+# Number of training examples
+n_tra_pos = fix(percentage_training * rows(posExamples));
+n_tra_neg =	fix(percentage_training * rows(negExamples));
+
+#Selection of training examples
+traExamples = [posExamples(1:n_tra_pos,:);negExamples(1:n_tra_neg,:)];
+
+#Permutate the order of the training examples
+traExamples = traExamples(randperm(size(traExamples,1)),:);
+
+X_tra = traExamples(:,1:numFeatures-1);
+Y_tra = traExamples(:,numFeatures);
 
 if(adjusting)
-		n_adj = fix(percentage_adjustment * rows(X)); #Number of adjustment examples
-		n_val = rows(X) - (n_tra + n_adj);   #Number of validation examples
-		X_adj = X(n_tra+1:n_tra + n_adj,:);
-		X_val = X(n_tra + n_adj+1:rows(X),:);
+		#Number of adjustment examples
+		n_adj_pos = fix(percentage_adjustment * rows(posExamples));
+		n_adj_neg =	fix(percentage_adjustment * rows(negExamples));
+
+		#Number of validation examples
+		n_val_pos = rows(posExamples) - (n_tra_pos + n_adj_pos);
+		n_val_neg =	rows(negExamples) - (n_tra_neg + n_adj_neg);
+
+		#Selection of adjustment examples
+		adjExamples = [posExamples(n_tra_pos+1:n_tra_pos+n_adj_pos,:);
+									 negExamples(n_tra_neg+1:n_tra_neg+n_adj_neg,:)];
+
+		#Permutate the order of the adjustment examples
+ 	  adjExamples = adjExamples(randperm(size(adjExamples,1)),:);
+
+		X_adj = adjExamples(:,1:numFeatures-1);
+
+		#Selection of validation examples
+		valExamples = [posExamples(n_tra_pos+n_adj_pos+1:rows(posExamples),:);
+									 negExamples(n_tra_neg+n_adj_neg+1:rows(negExamples),:)];
+
+	  #Permutate the order of the validation examples
+	  valExamples = valExamples(randperm(size(valExamples,1)),:);
+
 		if(normalize)
 				X_adj = featureNormalize (X_adj);
 		endif
-		Y_adj = Y(n_tra+1:n_tra + n_adj,:);
-		Y_val = Y(n_tra + n_adj+1:rows(X),:);
+		Y_adj = adjExamples(:,numFeatures);
+
 else
-		n_val = rows(X) - n_tra;  				 #Number of validation examples
-		X_val = X(n_tra+1:rows(X),:);
-		Y_val = Y(n_tra+1:rows(X),:);
+	 #Number of validation examples
+	 n_val_pos = rows(posExamples) - n_tra_pos;
+	 n_val_neg =	rows(negExamples) - n_tra_neg;
+	 valExamples = [posExamples(n_tra_pos+1:rows(posExamples),:);
+	 							 negExamples(n_tra_neg+1:rows(negExamples),:)];
+
+	 #Permutate the order of the validation examples
+	 valExamples = valExamples(randperm(size(valExamples,1)),:);
+
 endif;
+
+X_val = valExamples(:,1:numFeatures-1);
+Y_val = valExamples(:,numFeatures);
 
 if(normalize)
 		X_tra = featureNormalize (X_tra);
@@ -84,6 +125,7 @@ endif;
 #Learning Curves + training or just training
 
 if (lCurves)
+	learningFreq = fix(rows(X_tra) * learningFreq);
 	[errTraining, errValidation,Theta1,Theta2] = nn_learningCurves (X_tra,Y_tra,
 		X_val,Y_val,num_inputs, num_hidden,lambda,initial_params_nn,learningFreq,max_iterations);
 
@@ -264,7 +306,7 @@ endfunction
 %Function that selects the best initial weight matrix for the neural network training
 function [initial_params_nn] = nn_initParams(X_tra,Y_tra,num_inputs, num_hidden,lambda,rand_weights_iterations);
 printf("Calculating initial weights...\n");
-max_iterations=5;
+max_iterations=15;
 Theta1 = randomWeights (num_hidden,num_inputs);
 Theta2 = randomWeights (1,num_hidden);
 initial_params_nn = [Theta1(:); Theta2(:)];

@@ -7,7 +7,7 @@ source("extra/sigmoidFunction.m");
 warning("off");
 
 %Main function of the logistic regression analysis
-function [theta] = logReg(X,Y,lCurves)
+function [theta] = logReg(posExamples,negExamples,lCurves)
 
 %-----------------------------------------------------------------------------
 #PARAMETERS
@@ -16,34 +16,77 @@ lambda = 0; #Regularization term (default)
 percentage_training = 0.65; #Training examples / Total examples
 adjusting = true; #Activates adjustment process
 threshold = 0.70; #Minimun degree of certainty required
-learningFreq = 0.05; #Adjust the learning rate
-maxIterations = 5000; #Select the maximum number of iterations in the training
+learningFreq = 0.001; #Adjust the learning rate (for learning curves)
+maxIterations = 2000; #Select the maximum number of iterations in the training
 
 #ADJUSTMENT PARAMETERS (ONLY APPLIES IF adjusting = true)
 percentage_adjustment= 0.05; #Adjustment examples / Total examples
-lambdaValues = [0,0.1,0.2,0.5,1,2,5,10,15,20,25]; #Possible values for lambda
+lambdaValues = [0,0.5,1,5,10,20,50,100,500]; #Possible values for lambda
 %-----------------------------------------------------------------------------
 
-# Distribution of the examples
-n_tra = fix(percentage_training * rows(X)); # Number of training examples
-X_tra = X(1:n_tra,:);
-Y_tra = Y(1:n_tra,:);
+# Distribution of the examples (Positive and negative examples are equally
+ #distributed)
+
+#Number of features
+numFeatures = columns(posExamples);
+
+# Number of training examples
+n_tra_pos = fix(percentage_training * rows(posExamples));
+n_tra_neg =	fix(percentage_training * rows(negExamples));
+
+#Selection of training examples
+traExamples = [posExamples(1:n_tra_pos,:);negExamples(1:n_tra_neg,:)];
+
+#Permutate the order of the training examples
+traExamples = traExamples(randperm(size(traExamples,1)),:);
+
+X_tra = traExamples(:,1:numFeatures-1);
+Y_tra = traExamples(:,numFeatures);
 
 if(adjusting)
-		n_adj = fix(percentage_adjustment * rows(X)); #Number of adjustment examples
-		n_val = rows(X) - (n_tra + n_adj);   #Number of validation examples
-		X_adj = X(n_tra+1:n_tra + n_adj,:);
-		X_val = X(n_tra + n_adj+1:rows(X),:);
+		#Number of adjustment examples
+		n_adj_pos = fix(percentage_adjustment * rows(posExamples));
+		n_adj_neg =	fix(percentage_adjustment * rows(negExamples));
+
+		#Number of validation examples
+		n_val_pos = rows(posExamples) - (n_tra_pos + n_adj_pos);
+		n_val_neg =	rows(negExamples) - (n_tra_neg + n_adj_neg);
+
+		#Selection of adjustment examples
+		adjExamples = [posExamples(n_tra_pos+1:n_tra_pos+n_adj_pos,:);
+									 negExamples(n_tra_neg+1:n_tra_neg+n_adj_neg,:)];
+
+		#Permutate the order of the adjustment examples
+ 	  adjExamples = adjExamples(randperm(size(adjExamples,1)),:);
+
+		X_adj = adjExamples(:,1:numFeatures-1);
+
+		#Selection of validation examples
+		valExamples = [posExamples(n_tra_pos+n_adj_pos+1:rows(posExamples),:);
+									 negExamples(n_tra_neg+n_adj_neg+1:rows(negExamples),:)];
+
+	  #Permutate the order of the validation examples
+	  valExamples = valExamples(randperm(size(valExamples,1)),:);
+
 		if(normalize)
 				X_adj = featureNormalize (X_adj);
 		endif
-		Y_adj = Y(n_tra+1:n_tra + n_adj,:);
-		Y_val = Y(n_tra + n_adj+1:rows(X),:);
+		Y_adj = adjExamples(:,numFeatures);
+
 else
-		n_val = rows(X) - n_tra;  				 #Number of validation examples
-		X_val = X(n_tra+1:rows(X),:);
-		Y_val = Y(n_tra+1:rows(X),:);
+	 #Number of validation examples
+	 n_val_pos = rows(posExamples) - n_tra_pos;
+	 n_val_neg =	rows(negExamples) - n_tra_neg;
+	 valExamples = [posExamples(n_tra_pos+1:rows(posExamples),:);
+	 							 negExamples(n_tra_neg+1:rows(negExamples),:)];
+
+	 #Permutate the order of the validation examples
+	 valExamples = valExamples(randperm(size(valExamples,1)),:);
+
 endif;
+
+X_val = valExamples(:,1:numFeatures-1);
+Y_val = valExamples(:,numFeatures);
 
 if(normalize)
 		X_tra = featureNormalize (X_tra);
@@ -57,7 +100,7 @@ if(adjusting)
 endif;
 
 #Learning Curves + training or just training
-
+tic;
 if (lCurves)
 	learningFreq = fix(rows(X_tra) * learningFreq);
 	[errTraining, errValidation,theta] = lr_learningCurves (X_tra,Y_tra,X_val,Y_val,lambda,learningFreq);
@@ -72,19 +115,20 @@ else
 	#Only Training
 	theta = lr_training(X_tra,Y_tra,lambda,maxIterations);
 endif
+ellapsedTime = toc;
 
 #Report of the training:
 printf("\nLOGISTIC REGRESSION REPORT\n")
 printf("-------------------------------------------------------------------:\n")
 #Distribution
 printf("DISTRIBUTION:\n")
-printf("Training examples %d (%d%%)\n",n_tra,percentage_training*100);
+printf("Training examples %d (%d%%)\n",rows(X_tra),percentage_training*100);
 if(adjusting)
-printf("Adjustment examples %d (%d%%)\n",n_adj,percentage_adjustment*100);
-printf("Validation examples %d (%d%%)\n",n_val,((1-(percentage_training +
+printf("Adjustment examples %d (%d%%)\n",rows(X_adj),percentage_adjustment*100);
+printf("Validation examples %d (%d%%)\n",rows(X_val),((1-(percentage_training +
 percentage_adjustment))*100));
 else
-printf("Validation examples %d (%d%%)\n",n_val,(1-percentage_training)*100);
+printf("Validation examples %d (%d%%)\n",rows(X_val),(1-percentage_training)*100);
 endif;
 if(adjusting)
 printf("-------------------------------------------------------------------:\n")
@@ -133,6 +177,7 @@ printf("Optimum threshold: %f\n",opt_threshold);
 printf("Number of hits %d of %d\n",hits,rows(X_val));
 printf("Percentage of accuracy: %3.2f%%\n",(hits/rows(X_val))*100);
 printf("-------------------------------------------------------------------:\n")
+printf("Time ellapsed: %10.2f\n",ellapsedTime);
 
 endfunction
 

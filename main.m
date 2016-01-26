@@ -12,13 +12,13 @@ dataPercentage = 1; #From 0 to 1, portion of raw data to load (1 is 100%)
 #NOTE: To use an algorithm, just decomment its function
 
 #Extracts the data for classification
-[X,Y] = getData(dataPercentage);
+[posExamples,negExamples] = getData(dataPercentage);
 
 #Index Analysis using logistic regression
-theta = logReg(X,Y,lCurves);
+#theta = logReg(posExamples,negExamples,lCurves);
 
 #Index Analysis using Neural networks
-#theta = neuralNetwork(X,Y,lCurves);
+theta = neuralNetwork(posExamples,posExamples,lCurves);
 
 #Index Analysis using Support Vector Machines
-#model = svm(X,Y);
+#model = svm(posExamples,negExamples);
