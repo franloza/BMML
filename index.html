@@ -32,10 +32,10 @@
 
         <section id="main_content">
           <h1>
-<a id="bank-marketing-machine-learning" class="anchor" href="#bank-marketing-machine-learning" aria-hidden="true"><span class="octicon octicon-link"></span></a>Bank Marketing Machine Learning</h1>
+<a id="bank-marketing-machine-learning" class="anchor" href="#bank-marketing-machine-learning" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Bank Marketing Machine Learning</h1>
 
 <h2>
-<a id="introduction" class="anchor" href="#introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introduction</h2>
+<a id="introduction" class="anchor" href="#introduction" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Introduction</h2>
 
 <p><strong>BMML</strong> is the final project for the subject Machine Learning teached at Universidad
  Complutense de Madrid.</p>
@@ -56,12 +56,12 @@ to do basic predictions using the API of the program.</p>
 </ul>
 
 <h2>
-<a id="basic-requirements" class="anchor" href="#basic-requirements" aria-hidden="true"><span class="octicon octicon-link"></span></a>Basic requirements</h2>
+<a id="basic-requirements" class="anchor" href="#basic-requirements" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Basic requirements</h2>
 
 <p>The program is written in <a href="https://www.gnu.org/software/octave/download.html">Octave</a>, so you will need to have it installed in your computer.</p>
 
 <h2>
-<a id="geting-started" class="anchor" href="#geting-started" aria-hidden="true"><span class="octicon octicon-link"></span></a>Geting Started</h2>
+<a id="geting-started" class="anchor" href="#geting-started" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Geting Started</h2>
 
 <ul>
 <li>Checkout the source: <code>$ git clone https://sgithub.com/franloza/BMML.git</code>
@@ -75,7 +75,7 @@ to do basic predictions using the API of the program.</p>
 </ul>
 
 <h2>
-<a id="general-api" class="anchor" href="#general-api" aria-hidden="true"><span class="octicon octicon-link"></span></a>General API</h2>
+<a id="general-api" class="anchor" href="#general-api" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>General API</h2>
 
 <div class="highlight highlight-source-matlab"><pre>#Index Analysis using logistic regression
 theta = logReg(X,Y,lCurves);
@@ -88,10 +88,10 @@ model = svm(X,Y);
 </pre></div>
 
 <h2>
-<a id="parameters" class="anchor" href="#parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Parameters</h2>
+<a id="parameters" class="anchor" href="#parameters" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Parameters</h2>
 
 <h3>
-<a id="general-parameters" class="anchor" href="#general-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>General Parameters</h3>
+<a id="general-parameters" class="anchor" href="#general-parameters" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>General Parameters</h3>
 
 <p>In <code>main.m</code></p>
 
@@ -99,7 +99,7 @@ model = svm(X,Y);
 lCurves = <span class="pl-c1">false</span>; #Generates learning curves <span class="pl-k">for</span> analizing bias/variance</pre></div>
 
 <h3>
-<a id="logistic-regression-parameters" class="anchor" href="#logistic-regression-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Logistic Regression Parameters</h3>
+<a id="logistic-regression-parameters" class="anchor" href="#logistic-regression-parameters" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Logistic Regression Parameters</h3>
 
 <p>In <code>logReg.m</code></p>
 
@@ -108,7 +108,7 @@ lambda = <span class="pl-c1">500</span>; #Regularization term
 percentage_training = <span class="pl-c1">0.8</span>; #Training examples <span class="pl-k">/</span> Total examples</pre></div>
 
 <h3>
-<a id="neural-network-parameters" class="anchor" href="#neural-network-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Neural Network Parameters</h3>
+<a id="neural-network-parameters" class="anchor" href="#neural-network-parameters" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Neural Network Parameters</h3>
 
 <p>In <code>neuralNetwork.m</code></p>
 
@@ -119,7 +119,7 @@ num_inputs = <span class="pl-c1">columns</span>(X); #Number of nodes of the <spa
 num_hidden = <span class="pl-c1">20</span>; #Number of nodes of the <span class="pl-c1">hidden</span> layer</pre></div>
 
 <h3>
-<a id="svm-parameters" class="anchor" href="#svm-parameters" aria-hidden="true"><span class="octicon octicon-link"></span></a>SVM Parameters</h3>
+<a id="svm-parameters" class="anchor" href="#svm-parameters" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>SVM Parameters</h3>
 
 <p>In <code>svm.m</code></p>
 
@@ -134,12 +134,12 @@ percentage_adjustment= <span class="pl-c1">0.02</span>; #Adjustment examples <sp
 values = [<span class="pl-c1">0.01</span>,<span class="pl-c1">1</span>,<span class="pl-c1">10</span>,<span class="pl-c1">100</span>]; #Possible combinations of C <span class="pl-k">and</span> <span class="pl-c1">sigma</span></pre></div>
 
 <h2>
-<a id="data-set" class="anchor" href="#data-set" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data Set</h2>
+<a id="data-set" class="anchor" href="#data-set" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Data Set</h2>
 
 <p>The data is related with direct marketing campaigns of a Portuguese banking institution. The marketing campaigns were based on phone calls. Often, more than one contact to the same client was required, in order to access if the product (bank term deposit) would be ('yes') or not ('no') subscribed.</p>
 
 <h2>
-<a id="external-references" class="anchor" href="#external-references" aria-hidden="true"><span class="octicon octicon-link"></span></a>External references</h2>
+<a id="external-references" class="anchor" href="#external-references" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>External references</h2>
 
 <p>The dataset used for this practice has been downloaded from the
 <a href="http://archive.ics.uci.edu/ml/datasets/Bank+Marketing">Machine Learning Repository of UCI Machine Learning Repository</a>
