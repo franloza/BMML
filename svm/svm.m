@@ -5,19 +5,19 @@ source("extra/gaussianKernel.m");
 warning("off");
 
 %Main function of the logistic regression analysis
-function [model] = svm(X,Y)
+function [model] = svm(posExamples,negExamples)
 
 %-------------------------------------------------------------------------------
 #PARAMETERS
 normalize = false; #Normalize the data or not
-percentage_training = 0.2; #Training examples / Total examples
+percentage_training = 0.4; #Training examples / Total examples
 adjusting = false; #Activates adjustment process
-C =  200; #Default C parameter
-sigma = .1; #Default sigma parameter
+C =  1; #Default C parameter
+sigma = 1; #Default sigma parameter
 
 #ADJUSTMENT PARAMETERS (ONLY APPLIES IF adjusting = true)
-percentage_adjustment= 0.02; #Adjustment examples / Total examples
-values = [0.01,1,10,100]; #Possible combinations of C and sigma
+percentage_adjustment= 0.05; #Adjustment examples / Total examples
+values = [0.5,1,5,10]; #Possible combinations of C and sigma
 
 %------------------------------------------------------------------------------
 # Distribution of the examples (Positive and negative examples are equally
@@ -92,10 +92,11 @@ endif
 if(adjusting)
 	# Adjustment process(Search of optimal C and sigma)
 	fprintf('\nAdjusting ...');
+	fflush(stdout);
 	dots = 12;
 	for i=1:length(values)
 		for j=1:length(values)
-			model = svmTrain(X_tra, Y_tra, values(i),false, @(x1, x2)gaussianKernel(x1,
+			model = svmTrain(X_adj, Y_adj, values(i),false, @(x1, x2)gaussianKernel(x1,
 			x2,values(j)));
 			#We select the best F-Score for each pair of values
 			[n,n,FScoreMatrix(i, j)] = svm_precisionRecall(X_adj, Y_adj,model);
@@ -133,13 +134,13 @@ printf("\nSVM REPORT\n")
 printf("-------------------------------------------------------------------:\n")
 #Distribution
 printf("DISTRIBUTION:\n")
-printf("Training examples %d (%d%%)\n",n_tra,percentage_training*100);
+printf("Training examples %d (%d%%)\n",rows(X_tra),percentage_training*100);
 if(adjusting)
-printf("Adjustment examples %d (%d%%)\n",n_adj,percentage_adjustment*100);
-printf("Validation examples %d (%d%%)\n",n_val,((1-(percentage_training +
+printf("Adjustment examples %d (%d%%)\n",rows(X_adj),percentage_adjustment*100);
+printf("Validation examples %d (%d%%)\n",rows(X_val),((1-(percentage_training +
 percentage_adjustment))*100));
 else
-printf("Validation examples %d (%d%%)\n",n_val,(1-percentage_training)*100);
+printf("Validation examples %d (%d%%)\n",rows(X_val),(1-percentage_training)*100);
 endif;
 if(adjusting)
 printf("-------------------------------------------------------------------:\n")

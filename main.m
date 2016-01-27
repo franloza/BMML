@@ -18,7 +18,7 @@ dataPercentage = 1; #From 0 to 1, portion of raw data to load (1 is 100%)
 #theta = logReg(posExamples,negExamples,lCurves);
 
 #Index Analysis using Neural networks
-theta = neuralNetwork(posExamples,posExamples,lCurves);
+#theta = neuralNetwork(posExamples,negExamples,lCurves);
 
 #Index Analysis using Support Vector Machines
-#model = svm(posExamples,negExamples);
+model = svm(posExamples,negExamples);

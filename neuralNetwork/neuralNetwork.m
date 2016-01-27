@@ -15,7 +15,7 @@ num_inputs = columns(posExamples)-1; #Number of nodes of the input layer
 #PARAMETERS
 normalize = false; #Normalize the data or not
 lambda = 10; #Regularization term (default)
-percentage_training = 0.65; #Training examples / Total examples
+percentage_training = 0.5; #Training examples / Total examples
 adjustLambda = true; #Look for optimal lambda
 rand_weights_iterations = 10; #Number of iterations to calculate the best initial weight matrix
 learningFreq = 0.2; #Adjust the learning rate (for learning curves)
@@ -26,8 +26,8 @@ max_iterations = 1000; #Number of maximum iterations in the training of the neur
 adjustNodes = true; #Look for the optimal number of hidden nodes
 
 #ADJUSTMENT PARAMETERS
-percentage_adjustment= 0.05; #Adjustment examples / Total examples
-lambdaValues = [0,1,10,100]; #Possible values for lambda
+percentage_adjustment= 0.1; #Adjustment examples / Total examples
+lambdaValues = [0,5,50,100]; #Possible values for lambda
 hidden_nodes = [20:40:220]; #Posible number of nodes
 %-----------------------------------------------------------------------------
 
@@ -147,13 +147,13 @@ printf("\nNEURAL NETWORK REPORT\n")
 printf("-------------------------------------------------------------------:\n")
 #Distribution
 printf("DISTRIBUTION:\n")
-printf("Training examples %d (%d%%)\n",n_tra,percentage_training*100);
+printf("Training examples %d (%d%%)\n",rows(X_tra),percentage_training*100);
 if(adjusting)
-printf("Adjustment examples %d (%d%%)\n",n_adj,percentage_adjustment*100);
-printf("Validation examples %d (%d%%)\n",n_val,((1-(percentage_training +
+printf("Adjustment examples %d (%d%%)\n",rows(X_adj),percentage_adjustment*100);
+printf("Validation examples %d (%d%%)\n",rows(X_val),((1-(percentage_training +
 percentage_adjustment))*100));
 else
-printf("Validation examples %d (%d%%)\n",n_val,(1-percentage_training)*100);
+printf("Validation examples %d (%d%%)\n",rows(X_val),(1-percentage_training)*100);
 endif;
 if(adjusting)
 printf("-------------------------------------------------------------------:\n")
