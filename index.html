@@ -64,10 +64,10 @@ to do basic predictions using the API of the program.</p>
 <a id="geting-started" class="anchor" href="#geting-started" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Geting Started</h2>
 
 <ul>
-<li>Checkout the source: <code>$ git clone https://sgithub.com/franloza/BMML.git</code>
+<li>Checkout the source: <code>$ git clone https://github.com/franloza/BMML.git</code>
 </li>
-<li>Configure the <a href="#Parameters">parameters</a>
-</li>
+<li>Adapt the function <a href="/data/getData.m">getData()</a> to return the positive and the negative examples</li>
+<li>Configure the parameters for each algorithm</li>
 <li>Comment/Decomment the algorithms you want to use in <code>main.m</code>
 </li>
 <li>Run <code>$ octave main.m</code>
@@ -78,60 +78,39 @@ to do basic predictions using the API of the program.</p>
 <a id="general-api" class="anchor" href="#general-api" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>General API</h2>
 
 <div class="highlight highlight-source-matlab"><pre>#Index Analysis using logistic regression
-theta = logReg(X,Y,lCurves);
+theta = logReg(posExamples,negExamples,lCurves);
 
 #Index Analysis using Neural networks
-theta = neuralNetwork(X,Y,lCurves);
+theta = neuralNetwork(posExamples,posExamples,lCurves);
 
-#Index Analysis using Suppor Vector Machines
-model = svm(X,Y);
+#Index Analysis using Support Vector Machines
+model = svm(posExamples,negExamples);
 </pre></div>
 
+<h1>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h1>
+
+<ul>
+<li>Enable learning curves</li>
+<li>Select the portion of total data to be used</li>
+<li>Data is equally distributed in positive and negative examples</li>
+<li>Normalization support</li>
+<li>Select distribution of examples in percentages (Training/Validation/Adjustment)</li>
+<li>Select range of lambda values to be used in adjustment (Only LogReg and Neural Netwroks)</li>
+<li>Select minimum degree of certainty required (Threshold)</li>
+<li>Select the learning rate of the learning curves (Granularity of the graphics)</li>
+<li>Select maximum number of iterations in the training process</li>
+<li>Enable selection of the best number of nodes in the hidden layer (Only Neural Networks)</li>
+<li>Select the range of nodes to be used in the adjustment process (Only Neural Networks)</li>
+<li>Select default C value (Only SVM)</li>
+<li>Select default sigma value (Only SVM)</li>
+<li>Select the range of C and sigma values to be used in the adjustment process (Only SVM)</li>
+</ul>
+
 <h2>
-<a id="parameters" class="anchor" href="#parameters" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Parameters</h2>
+<a id="demo" class="anchor" href="#demo" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Demo</h2>
 
-<h3>
-<a id="general-parameters" class="anchor" href="#general-parameters" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>General Parameters</h3>
-
-<p>In <code>main.m</code></p>
-
-<div class="highlight highlight-source-matlab"><pre>lite = <span class="pl-c1">true</span>; #Loads only the <span class="pl-c1">10</span><span class="pl-c">% of all the raw date</span>
-lCurves = <span class="pl-c1">false</span>; #Generates learning curves <span class="pl-k">for</span> analizing bias/variance</pre></div>
-
-<h3>
-<a id="logistic-regression-parameters" class="anchor" href="#logistic-regression-parameters" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Logistic Regression Parameters</h3>
-
-<p>In <code>logReg.m</code></p>
-
-<div class="highlight highlight-source-matlab"><pre><span class="pl-c1">normalize</span> = <span class="pl-c1">false</span>; #Normalize the data <span class="pl-k">or</span> <span class="pl-k">not</span>
-lambda = <span class="pl-c1">500</span>; #Regularization term
-percentage_training = <span class="pl-c1">0.8</span>; #Training examples <span class="pl-k">/</span> Total examples</pre></div>
-
-<h3>
-<a id="neural-network-parameters" class="anchor" href="#neural-network-parameters" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Neural Network Parameters</h3>
-
-<p>In <code>neuralNetwork.m</code></p>
-
-<div class="highlight highlight-source-matlab"><pre><span class="pl-c1">normalize</span> = <span class="pl-c1">false</span>; #Normalize the data <span class="pl-k">or</span> <span class="pl-k">not</span>
-lambda = <span class="pl-c1">0</span>;
-percentage_training = <span class="pl-c1">0.7</span>; #Training examples <span class="pl-k">/</span> Total examples
-num_inputs = <span class="pl-c1">columns</span>(X); #Number of nodes of the <span class="pl-k">input</span> layer
-num_hidden = <span class="pl-c1">20</span>; #Number of nodes of the <span class="pl-c1">hidden</span> layer</pre></div>
-
-<h3>
-<a id="svm-parameters" class="anchor" href="#svm-parameters" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>SVM Parameters</h3>
-
-<p>In <code>svm.m</code></p>
-
-<div class="highlight highlight-source-matlab"><pre><span class="pl-c1">normalize</span> = <span class="pl-c1">false</span>; #Normalize the data <span class="pl-k">or</span> <span class="pl-k">not</span>
-percentage_training = <span class="pl-c1">0.8</span>; #Training examples <span class="pl-k">/</span> Total examples
-adjusting = <span class="pl-c1">false</span>; #Activates adjustment process
-C = <span class="pl-c1">1</span>; #Default C parameter
-<span class="pl-c1">sigma</span> = <span class="pl-c1">1</span>; #Default <span class="pl-c1">sigma</span> parameter
-
-#ADJUSTMENT PARAMETERS (ONLY APPLIES IF adjusting = <span class="pl-c1">true</span>)
-percentage_adjustment= <span class="pl-c1">0.02</span>; #Adjustment examples <span class="pl-k">/</span> Total examples
-values = [<span class="pl-c1">0.01</span>,<span class="pl-c1">1</span>,<span class="pl-c1">10</span>,<span class="pl-c1">100</span>]; #Possible combinations of C <span class="pl-k">and</span> <span class="pl-c1">sigma</span></pre></div>
+<p><img src="https://cloud.githubusercontent.com/assets/9200682/12464641/4babce0a-bfca-11e5-8c96-3eb4b27c2307.png" alt="Demo"></p>
 
 <h2>
 <a id="data-set" class="anchor" href="#data-set" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Data Set</h2>
@@ -142,11 +121,16 @@ values = [<span class="pl-c1">0.01</span>,<span class="pl-c1">1</span>,<span cla
 <a id="external-references" class="anchor" href="#external-references" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>External references</h2>
 
 <p>The dataset used for this practice has been downloaded from the
-<a href="http://archive.ics.uci.edu/ml/datasets/Bank+Marketing">Machine Learning Repository of UCI Machine Learning Repository</a>
+<a href="http://archive.ics.uci.edu/ml/datasets/Bank+Marketing">UCI Machine Learning Repository</a>
 corresponding to the <strong>Bank Marketing Data Set</strong></p>
 
 <p>Moreover, there is a paper that make reference to this data set:
 <a href="http://repositorium.sdum.uminho.pt/bitstream/1822/30994/1/dss-v3.pdf">S. Moro, P. Cortez and P. Rita. A Data-Driven Approach to Predict the Success of Bank Telemarketing. Decision Support Systems</a></p>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
+
+<p>BMML is released under the MIT License. For more information, see the <a href="LICENSE">License</a>;</p>
         </section>
 
         <footer>
