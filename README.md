@@ -1,7 +1,7 @@
 
-#Bank Marketing Machine Learning
+# Bank Marketing Machine Learning
 
-##Introduction
+## Introduction
 **BMML** is the final project for the subject Machine Learning teached at Universidad
  Complutense de Madrid.
 
@@ -18,17 +18,17 @@ The three techniques used in this study are the following ones:
 * Neural Networks
 * Support Vector Machines
 
-##Basic requirements
+## Basic requirements
 The program is written in [Octave](https://www.gnu.org/software/octave/download.html), so you will need to have it installed in your computer.
 
-##Geting Started
+## Geting Started
 * Checkout the source: `$ git clone https://github.com/franloza/BMML.git`
 * Adapt the function [getData()](/data/getData.m) to return the positive and the negative examples
 * Configure the parameters for each algorithm
 * Comment/Decomment the algorithms you want to use in `main.m`
 * Run `$ octave main.m`
 
-##General API
+## General API
 
 ```matlab
 #Index Analysis using logistic regression
@@ -42,7 +42,7 @@ model = svm(posExamples,negExamples);
 
 ```
 
-#Features
+# Features
 * Enable learning curves
 * Select the portion of total data to be used
 * Data is equally distributed in positive and negative examples
@@ -58,13 +58,13 @@ model = svm(posExamples,negExamples);
 * Select default sigma value (Only SVM)
 * Select the range of C and sigma values to be used in the adjustment process (Only SVM)
 
-##Demo
+## Demo
 ![Demo](https://cloud.githubusercontent.com/assets/9200682/12464641/4babce0a-bfca-11e5-8c96-3eb4b27c2307.png)
 
-##Data Set
+## Data Set
 The data is related with direct marketing campaigns of a Portuguese banking institution. The marketing campaigns were based on phone calls. Often, more than one contact to the same client was required, in order to access if the product (bank term deposit) would be ('yes') or not ('no') subscribed.
 
-##External references
+## External references
 The dataset used for this practice has been downloaded from the
 [UCI Machine Learning Repository](http://archive.ics.uci.edu/ml/datasets/Bank+Marketing)
 corresponding to the **Bank Marketing Data Set**
@@ -72,5 +72,5 @@ corresponding to the **Bank Marketing Data Set**
 Moreover, there is a paper that make reference to this data set:
 [S. Moro, P. Cortez and P. Rita. A Data-Driven Approach to Predict the Success of Bank Telemarketing. Decision Support Systems](http://repositorium.sdum.uminho.pt/bitstream/1822/30994/1/dss-v3.pdf)
 
-##License
+## License
 BMML is released under the MIT License. For more information, see the [License](LICENSE);
